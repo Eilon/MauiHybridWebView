@@ -14,7 +14,13 @@
         function DoClick() {
             var value = document.getElementById('valueInput').value;
             // TODO: Do something
-            window.chrome.webview.postMessage("My message is " + value);
+
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage("My Windows message is " + value);
+            }
+            else {
+                hybridWebViewHost.sendMessage("My Android message is " + value);
+            }
         }
     </script>
 </head>
