@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        function DoPublicFunction(name, value) {
+            alert('Hi ' + name + ', I am setting the content to: \'' + value + '\'.');
+
+            document.getElementById('valueInput').value = value;
+        }
+
+        function DoClick() {
+            var value = document.getElementById('valueInput').value;
+            // TODO: Do something
+            window.chrome.webview.postMessage("My message is " + value);
+        }
+    </script>
+</head>
+<body>
+    <div>Hello!</div>
+    <div>
+        <input type="text" id="valueInput" />
+    </div>
+    <div>
+        <button type="button" onclick="DoClick()">Do native action</button>
+    </div>
+</body>
+</html>
