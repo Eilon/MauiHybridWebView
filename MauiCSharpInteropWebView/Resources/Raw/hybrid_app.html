@@ -5,32 +5,48 @@
     <meta charset="utf-8" />
     <title></title>
     <script>
-        function DoPublicFunction(name, value) {
-            alert('Hi ' + name + ', I am setting the content to: \'' + value + '\'.');
-
-            document.getElementById('valueInput').value = value;
+        function SendToJs(message) {
+            Log('Received message from DotNet: ' + message);
         }
 
         function DoClick() {
             var value = document.getElementById('valueInput').value;
-            // TODO: Do something
 
+            SendMessageToDotNet(value);
+        }
+
+        function SendMessageToDotNet(message) {
+            Log('Sent message to DotNet: ' + message);
             if (window.chrome && window.chrome.webview) {
-                window.chrome.webview.postMessage("My Windows message is " + value);
+                // Windows WebView2
+                window.chrome.webview.postMessage(message);
             }
             else {
-                hybridWebViewHost.sendMessage("My Android message is " + value);
+                // Android WebView
+                hybridWebViewHost.sendMessage(message);
             }
+        }
+
+        function Log(message) {
+            var logArea = document.getElementById('messageLog');
+            logArea.value += '\r\n' + message;
+
+            // Scroll to end
+            logArea.selectionStart = logArea.textLength;
+            logArea.scrollTop = logArea.scrollHeight;
         }
     </script>
 </head>
 <body>
     <div>Hello!</div>
     <div>
-        <input type="text" id="valueInput" />
+        Value from .NET: <input type="text" id="valueInput" value="message from JS" />
     </div>
     <div>
-        <button type="button" onclick="DoClick()">Do native action</button>
+        <button type="button" onclick="DoClick()">Send message to .NET</button>
+    </div>
+    <div>
+        <textarea id="messageLog" style="width: 90%; height: 10em;"></textarea>
     </div>
 </body>
 </html>

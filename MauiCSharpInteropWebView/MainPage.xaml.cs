@@ -22,6 +22,6 @@ public partial class MainPage : ContentPage
 
         SemanticScreenReader.Announce(CounterBtn.Text);
 
-        _ = webView.EvaluateJavaScriptAsync("DoPublicFunction('my name here', 7)");
+        _ = webView.EvaluateJavaScriptAsync($"SendToJs('hi from .net, counter={count}!')");
     }
 }
