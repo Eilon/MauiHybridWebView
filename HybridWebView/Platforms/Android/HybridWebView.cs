@@ -6,20 +6,29 @@ namespace HybridWebView
 {
     partial class HybridWebView
     {
+        // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
+        // making it substantially faster. Note that this isn't real HTTP traffic, since
+        // we intercept all the requests within this origin.
+        internal static readonly string AppHostAddress = "0.0.0.0";
+
+        /// <summary>
+        /// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
+        /// </summary>
+        internal static readonly string AppOrigin = $"https://{AppHostAddress}/";
+
+        internal static readonly Uri AppOriginUri = new(AppOrigin);
+
         private HybridWebViewJavaScriptInterface _javaScriptInterface;
-        async partial void InitializeHybridWebView(string mainFileAssetPath)
+
+        async partial void InitializeHybridWebView()
         {
             var awv = (AWebView)Handler.PlatformView;
             awv.Settings.JavaScriptEnabled = true;
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
             awv.AddJavascriptInterface(_javaScriptInterface, "hybridWebViewHost");
-            awv.LoadDataWithBaseURL(
-                baseUrl: "https://0.0.0.0/",
-                data: await GetAssetContentAsync(mainFileAssetPath),
-                mimeType: "text/html",
-                encoding: "UTF-8",
-                historyUrl: null);
+
+            awv.LoadUrl(AppOrigin);
         }
 
         private sealed class HybridWebViewJavaScriptInterface : Java.Lang.Object

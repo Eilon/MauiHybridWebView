@@ -10,7 +10,7 @@
         }
 
         function DoClick() {
-            var value = document.getElementById('valueInput').value;
+            var value = CoolJSLibrary(document.getElementById('valueInput').value);
 
             SendMessageToDotNet(value);
         }
@@ -36,9 +36,11 @@
             logArea.scrollTop = logArea.scrollHeight;
         }
     </script>
+    <script src="js/extra_code.js"></script>
+    <link href="styles/my-styles.css" rel="stylesheet" />
 </head>
 <body>
-    <div>Hello!</div>
+    <h1>My Hybrid App</h1>
     <div>
         Value from .NET: <input type="text" id="valueInput" value="message from JS" />
     </div>

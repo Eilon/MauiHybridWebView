@@ -2,7 +2,7 @@
 {
     partial class HybridWebView
     {
-        partial void InitializeHybridWebView(string mainFileAssetPath)
+        partial void InitializeHybridWebView()
         {
             throw new PlatformNotSupportedException();
         }
