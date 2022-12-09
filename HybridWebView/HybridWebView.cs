@@ -1,11 +1,12 @@
 ﻿using Microsoft.Maui.Controls;
-using System.Diagnostics;
 
 namespace HybridWebView
 {
     public partial class HybridWebView : WebView
     {
         public string MainFile { get; set; }
+
+        public event EventHandler<HybridWebViewMessageReceivedEventArgs> MessageReceived;
 
         protected override void OnHandlerChanged()
         {
@@ -18,7 +19,7 @@ namespace HybridWebView
 
         public virtual void OnMessageReceived(string message)
         {
-            Debug.WriteLine($"Web Message Received: {message}");
+            MessageReceived?.Invoke(this, new HybridWebViewMessageReceivedEventArgs(message));
         }
 
         private async Task<string> GetAssetContentAsync(string assetPath)

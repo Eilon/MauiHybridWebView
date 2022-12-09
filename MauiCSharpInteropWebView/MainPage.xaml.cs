@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace MauiCSharpInteropWebView;
 
@@ -23,5 +24,10 @@ public partial class MainPage : ContentPage
         SemanticScreenReader.Announce(CounterBtn.Text);
 
         _ = webView.EvaluateJavaScriptAsync($"SendToJs('hi from .net, counter={count}!')");
+    }
+
+    private void webView_MessageReceived(object sender, HybridWebView.HybridWebViewMessageReceivedEventArgs e)
+    {
+        Debug.WriteLine($"Web Message Received: {e.Message}");
     }
 }

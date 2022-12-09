@@ -18,7 +18,7 @@
                 Clicked="OnCounterClicked"
                 HorizontalOptions="Center" />
 
-        <hwv:HybridWebView Grid.Row="1" Grid.ColumnSpan="2" x:Name="webView" MainFile="hybrid_app.html" />
+        <hwv:HybridWebView Grid.Row="1" Grid.ColumnSpan="2" x:Name="webView" MainFile="hybrid_app.html" MessageReceived="webView_MessageReceived" />
     </Grid>
 
 </ContentPage>
