@@ -5,11 +5,11 @@ using AWebView = Android.Webkit.WebView;
 
 namespace HybridWebView
 {
-    public class HybridWebViewClient : MauiWebViewClient
+    public class AndroidHybridWebViewClient : MauiWebViewClient
     {
         private readonly HybridWebViewHandler _handler;
 
-        public HybridWebViewClient(HybridWebViewHandler handler) : base(handler)
+        public AndroidHybridWebViewClient(HybridWebViewHandler handler) : base(handler)
         {
             _handler = handler;
         }
