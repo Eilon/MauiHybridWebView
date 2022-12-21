@@ -9,6 +9,16 @@
             Log('Received message from DotNet: ' + message);
         }
 
+        function SendToJsWithArgs(floatValue, message, date) {
+            Log('Received message with args from DotNet: floatValue=' + floatValue.toPrecision(2) + ', Message=' + message + ', Seconds=' + (new Date(date).getSeconds()));
+        }
+
+        function SendToJsAddNumbers(a, b) {
+            var sum = a + b;
+            Log('Received message with args from DotNet: SendToJsAddNumbers(' + a + ', ' + b + ') = ' + sum);
+            return sum;
+        }
+
         function DoClick() {
             var value = CoolJSLibrary(document.getElementById('valueInput').value);
 
