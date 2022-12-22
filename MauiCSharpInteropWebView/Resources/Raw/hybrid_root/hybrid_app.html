@@ -22,11 +22,32 @@
         function DoClick() {
             var value = CoolJSLibrary(document.getElementById('valueInput').value);
 
-            SendMessageToDotNet(value);
+            SendRawMessageToDotNet(value);
+            SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
         }
 
-        function SendMessageToDotNet(message) {
-            Log('Sent message to DotNet: ' + message);
+        function SendRawMessageToDotNet(message) {
+            SendMessageToDotNet(0, message);
+        }
+
+        function SendInvokeMessageToDotNet(methodName, paramValues) {
+            if (typeof paramValues !== 'undefined') {
+                if (!Array.isArray(paramValues)) {
+                    paramValues = [paramValues];
+                }
+                for (var i = 0; i < paramValues.length; i++) {
+                    paramValues[i] = JSON.stringify(paramValues[i]);
+                }
+            }
+
+            SendMessageToDotNet(1, JSON.stringify({ "MethodName": methodName, "ParamValues": paramValues }));
+        }
+
+        function SendMessageToDotNet(messageType, messageContent) {
+            Log('Sending message to DotNet (messageType:' + messageType + '): ' + messageContent);
+
+            var message = JSON.stringify({ "MessageType": messageType, "MessageContent": messageContent });
+
             if (window.chrome && window.chrome.webview) {
                 // Windows WebView2
                 window.chrome.webview.postMessage(message);

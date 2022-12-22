@@ -10,6 +10,23 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
+
+        webView.JSInvokeTarget = new MyJSInvokeTarget(this);
+    }
+
+    private sealed class MyJSInvokeTarget
+    {
+        private MainPage _mainPage;
+
+        public MyJSInvokeTarget(MainPage mainPage)
+        {
+            _mainPage = mainPage;
+        }
+
+        public void CallMeFromScript(string message, int value)
+        {
+            Debug.WriteLine($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
+        }
     }
 
     private async void OnCounterClicked(object sender, EventArgs e)
@@ -29,7 +46,7 @@ public partial class MainPage : ContentPage
         Debug.WriteLine($"JS Return value received with sum: {sum}");
     }
 
-    private void webView_MessageReceived(object sender, HybridWebView.HybridWebViewMessageReceivedEventArgs e)
+    private void webView_MessageReceived(object sender, HybridWebView.HybridWebViewRawMessageReceivedEventArgs e)
     {
         Debug.WriteLine($"Web Message Received: {e.Message}");
     }

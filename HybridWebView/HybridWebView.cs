@@ -5,9 +5,20 @@ namespace HybridWebView
     public partial class HybridWebView : WebView
     {
         public string MainFile { get; set; }
+
+        /// <summary>
+        ///  The path within the app's "Raw" asset resources that contain the web app's contents. For example, if the
+        ///  files are located in "ProjectFolder/Resources/Raw/hybrid_root", then set this property to "hybrid_root".
+        /// </summary>
         public string HybridAssetRoot { get; set; }
 
-        public event EventHandler<HybridWebViewMessageReceivedEventArgs> MessageReceived;
+        /// <summary>
+        /// The target object for JavaScript method invocations. When an "invoke" message is sent from JavaScript,
+        /// the invoked method will be located on this object, and any specified parameters will be passed in.
+        /// </summary>
+        public object JSInvokeTarget { get; set; }
+
+        public event EventHandler<HybridWebViewRawMessageReceivedEventArgs> RawMessageReceived;
 
         protected override void OnHandlerChanged()
         {
@@ -52,7 +63,54 @@ namespace HybridWebView
 
         public virtual void OnMessageReceived(string message)
         {
-            MessageReceived?.Invoke(this, new HybridWebViewMessageReceivedEventArgs(message));
+            var messageData = JsonSerializer.Deserialize<WebMessageData>(message);
+            switch (messageData.MessageType)
+            {
+                case 0: // "raw" message (just a string)
+                    RawMessageReceived?.Invoke(this, new HybridWebViewRawMessageReceivedEventArgs(messageData.MessageContent));
+                    break;
+                case 1: // "invoke" message
+                    var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(messageData.MessageContent);
+                    InvokeDotNetMethod(invokeData);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown message type: {messageData.MessageType}. Message contents: {messageData.MessageContent}");
+            }
+
+        }
+
+        private void InvokeDotNetMethod(JSInvokeMethodData invokeData)
+        {
+            if (JSInvokeTarget is null)
+            {
+                throw new NotImplementedException($"The {nameof(JSInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+            }
+
+            var invokeMethod = JSInvokeTarget.GetType().GetMethod(invokeData.MethodName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+
+            if (invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
+            {
+                throw new InvalidOperationException($"The number of parameters on {nameof(JSInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
+            }
+
+            var paramObjectValues =
+                invokeData.ParamValues
+                    .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
+                    .ToArray();
+
+            var returnValue = invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
+        }
+
+        private sealed class JSInvokeMethodData
+        {
+            public string MethodName { get; set; }
+            public string[] ParamValues { get; set; }
+        }
+
+        private sealed class WebMessageData
+        {
+            public int MessageType { get; set; }
+            public string MessageContent { get; set; }
         }
 
         internal static async Task<string> GetAssetContentAsync(string assetPath)
