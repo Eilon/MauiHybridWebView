@@ -6,7 +6,13 @@
 
 h1 {
     font-weight: 600;
-    padding-left: 1em;
+    padding-left: .5em;
+}
+
+h2 {
+    font-size: 1.1em;
+    font-weight: 500;
+    padding-left: .5em;
 }
 
 div{

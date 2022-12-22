@@ -87,10 +87,5 @@ namespace HybridWebView
             new Dictionary<string, string> {
                 { "Content-Type", contentType },
             };
-
-        public override bool ShouldOverrideUrlLoading(AWebView view, IWebResourceRequest request)
-        {
-            return true;
-        }
     }
 }

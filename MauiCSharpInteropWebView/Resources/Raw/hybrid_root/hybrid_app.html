@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
+    <script src="js/HybridWebView.js"></script>
     <link href="styles/my-styles.css" rel="stylesheet" />
 </head>
 <body>
@@ -19,5 +20,9 @@
     <div>
         Check out the navigation links above for some <em>cool</em> demos.
     </div>
+    <script>
+        // Notify .NET code which page we're on
+        HybridWebView.SendRawMessageToDotNet("page:0");
+    </script>
 </body>
 </html>

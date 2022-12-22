@@ -4,21 +4,35 @@
              xmlns:hwv="clr-namespace:HybridWebView;assembly=HybridWebView"
              x:Class="MauiCSharpInteropWebView.MainPage">
 
-    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="2*,1*,1*" RowDefinitions="Auto,Auto,1*,3*">
         <Label
-                Text="Hello, World!"
-                SemanticProperties.HeadingLevel="Level1"
+                Text="{Binding CurrentPageName}"
                 FontSize="32"
                 HorizontalOptions="Center" />
 
         <Button Grid.Column="1"
-                x:Name="CounterBtn"
-                Text="Click me"
-                SemanticProperties.Hint="Counts the number of times you click"
-                Clicked="OnCounterClicked"
-                HorizontalOptions="Center" />
+                Text="Send raw message to JS"
+                Clicked="OnSendRawMessageToJS"
+                HorizontalOptions="Center"
+                IsEnabled="{Binding PageAllowsRawMessage}"
+                Margin="5" />
 
-        <hwv:HybridWebView Grid.Row="1" Grid.ColumnSpan="2" x:Name="webView" HybridAssetRoot="hybrid_root" MainFile="hybrid_app.html" RawMessageReceived="webView_MessageReceived" />
+        <Button Grid.Column="2"
+                Text="Invoke JS method"
+                Clicked="OnInvokeJSMethod"
+                HorizontalOptions="Center"
+                IsEnabled="{Binding PageAllowsMethodInvoke}"
+                Margin="5"  />
+
+        <Label
+                Grid.Row="1" Grid.ColumnSpan="3" 
+                Text=".NET message log"
+                FontSize="16"
+                Margin="5"/>
+
+        <Editor Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding MessageLog}" IsReadOnly="True" CursorPosition="{Binding MessageLogPosition}" />
+
+        <hwv:HybridWebView Grid.Row="3" Grid.ColumnSpan="3" x:Name="myHybridWebView" HybridAssetRoot="hybrid_root" MainFile="hybrid_app.html" RawMessageReceived="OnHybridWebViewRawMessageReceived" />
     </Grid>
 
 </ContentPage>

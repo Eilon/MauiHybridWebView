@@ -5,14 +5,18 @@ namespace MauiCSharpInteropWebView;
 
 public partial class MainPage : ContentPage
 {
-    int count = 0;
+    private HybridAppPageID _currentPage;
 
     public MainPage()
     {
         InitializeComponent();
 
-        webView.JSInvokeTarget = new MyJSInvokeTarget(this);
+        BindingContext = this;
+
+        myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
     }
+
+    public string CurrentPageName => $"Current hybrid page: {_currentPage}";
 
     private sealed class MyJSInvokeTarget
     {
@@ -25,29 +29,57 @@ public partial class MainPage : ContentPage
 
         public void CallMeFromScript(string message, int value)
         {
-            Debug.WriteLine($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
+            _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
         }
     }
 
-    private async void OnCounterClicked(object sender, EventArgs e)
+    private async void OnSendRawMessageToJS(object sender, EventArgs e)
     {
-        count++;
-
-        if (count == 1)
-            CounterBtn.Text = $"Clicked {count} time";
-        else
-            CounterBtn.Text = $"Clicked {count} times";
-
-        SemanticScreenReader.Announce(CounterBtn.Text);
-
-        _ = await webView.EvaluateJavaScriptAsync($"SendToJs('hi from .net, counter={count}!')");
-        _ = await webView.InvokeJsMethodAsync("SendToJsWithArgs", 123.456789, "Nice!", DateTimeOffset.Now);
-        var sum = await webView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);
-        Debug.WriteLine($"JS Return value received with sum: {sum}");
+        _ = await myHybridWebView.EvaluateJavaScriptAsync($"SendToJs('Sent from .NET, the time is: {DateTimeOffset.Now}!')");
     }
 
-    private void webView_MessageReceived(object sender, HybridWebView.HybridWebViewRawMessageReceivedEventArgs e)
+    public bool PageAllowsRawMessage => _currentPage == HybridAppPageID.RawMessages;
+    public bool PageAllowsMethodInvoke => _currentPage == HybridAppPageID.MethodInvoke;
+
+    private async void OnInvokeJSMethod(object sender, EventArgs e)
     {
-        Debug.WriteLine($"Web Message Received: {e.Message}");
+        var sum = await myHybridWebView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);
+        WriteToLog($"JS Return value received with sum: {sum}");
+    }
+
+    private void OnHybridWebViewRawMessageReceived(object sender, HybridWebView.HybridWebViewRawMessageReceivedEventArgs e)
+    {
+        const string PagePrefix = "page:";
+        if (e.Message.StartsWith(PagePrefix, StringComparison.Ordinal))
+        {
+            _currentPage = (HybridAppPageID)int.Parse(e.Message.Substring(PagePrefix.Length));
+            OnPropertyChanged(nameof(CurrentPageName));
+            OnPropertyChanged(nameof(PageAllowsRawMessage));
+            OnPropertyChanged(nameof(PageAllowsMethodInvoke));
+        }
+        else
+        {
+            WriteToLog($"Web Message Received: {e.Message}");
+        }
+    }
+
+    public string MessageLog { get; private set; }
+    public int MessageLogPosition { get; private set; }
+
+    int _messageCount;
+
+    private void WriteToLog(string message)
+    {
+        MessageLog += Environment.NewLine + $"{_messageCount++}: " + message;
+        MessageLogPosition = MessageLog.Length;
+        OnPropertyChanged(nameof(MessageLog));
+        OnPropertyChanged(nameof(MessageLogPosition));
+    }
+
+    private enum HybridAppPageID
+    {
+        MainPage = 0,
+        RawMessages = 1,
+        MethodInvoke = 2,
     }
 }

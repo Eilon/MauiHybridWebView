@@ -28,13 +28,17 @@
         Raw messages are sent as a raw string from JavaScript to .NET with no further processing.
     </div>
     <div>
-        Value from .NET: <input type="text" id="valueInput" value="message from JS" />
+        Message <input type="text" id="valueInput" value="message from JS to .NET" /> <button type="button" onclick="SendRawMessage()">Send raw message to .NET</button>
     </div>
-    <div>
-        <button type="button" onclick="SendRawMessage()">Send raw message to .NET</button>
-    </div>
+    <h2>
+        JS message log:
+    </h2>
     <div>
         <textarea id="messageLog" style="width: 90%; height: 10em;"></textarea>
     </div>
+    <script>
+        // Notify .NET code which page we're on
+        HybridWebView.SendRawMessageToDotNet("page:1");
+    </script>
 </body>
 </html>
