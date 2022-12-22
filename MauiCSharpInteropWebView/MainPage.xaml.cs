@@ -1,11 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-
-namespace MauiCSharpInteropWebView;
+﻿namespace MauiCSharpInteropWebView;
 
 public partial class MainPage : ContentPage
 {
     private HybridAppPageID _currentPage;
+    private int _messageCount;
 
     public MainPage()
     {
@@ -17,29 +15,16 @@ public partial class MainPage : ContentPage
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
+    public string MessageLog { get; private set; }
+    public int MessageLogPosition { get; private set; }
+    public bool PageAllowsRawMessage => _currentPage == HybridAppPageID.RawMessages;
+    public bool PageAllowsMethodInvoke => _currentPage == HybridAppPageID.MethodInvoke;
 
-    private sealed class MyJSInvokeTarget
-    {
-        private MainPage _mainPage;
-
-        public MyJSInvokeTarget(MainPage mainPage)
-        {
-            _mainPage = mainPage;
-        }
-
-        public void CallMeFromScript(string message, int value)
-        {
-            _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
-        }
-    }
 
     private async void OnSendRawMessageToJS(object sender, EventArgs e)
     {
         _ = await myHybridWebView.EvaluateJavaScriptAsync($"SendToJs('Sent from .NET, the time is: {DateTimeOffset.Now}!')");
     }
-
-    public bool PageAllowsRawMessage => _currentPage == HybridAppPageID.RawMessages;
-    public bool PageAllowsMethodInvoke => _currentPage == HybridAppPageID.MethodInvoke;
 
     private async void OnInvokeJSMethod(object sender, EventArgs e)
     {
@@ -63,17 +48,27 @@ public partial class MainPage : ContentPage
         }
     }
 
-    public string MessageLog { get; private set; }
-    public int MessageLogPosition { get; private set; }
-
-    int _messageCount;
-
     private void WriteToLog(string message)
     {
         MessageLog += Environment.NewLine + $"{_messageCount++}: " + message;
         MessageLogPosition = MessageLog.Length;
         OnPropertyChanged(nameof(MessageLog));
         OnPropertyChanged(nameof(MessageLogPosition));
+    }
+
+    private sealed class MyJSInvokeTarget
+    {
+        private MainPage _mainPage;
+
+        public MyJSInvokeTarget(MainPage mainPage)
+        {
+            _mainPage = mainPage;
+        }
+
+        public void CallMeFromScript(string message, int value)
+        {
+            _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
+        }
     }
 
     private enum HybridAppPageID
