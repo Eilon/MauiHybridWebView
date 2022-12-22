@@ -19,6 +19,8 @@ namespace MauiReactJSHybridApp
 		builder.Logging.AddDebug();
 #endif
 
+            builder.Services.AddHybridWebView();
+
             return builder.Build();
         }
     }
