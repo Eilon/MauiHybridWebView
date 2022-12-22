@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        function SendToJs(message) {
+            Log('Received message from DotNet: ' + message);
+        }
+
+        function SendRawMessage() {
+            var value = CoolJSLibrary(document.getElementById('valueInput').value);
+
+            HybridWebView.SendRawMessageToDotNet(value);
+        }
+    </script>
+    <script src="js/HybridWebView.js"></script>
+    <script src="js/extra_code.js"></script>
+    <link href="styles/my-styles.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>HybridWebView demo: Raw messages</h1>
+    <div class="navBar">
+        <a href="/">Main page</a> | Raw messages | <a href="/methodinvoke.html">Method invoke</a>
+    </div>
+    <div>
+        Raw messages are sent as a raw string from JavaScript to .NET with no further processing.
+    </div>
+    <div>
+        Value from .NET: <input type="text" id="valueInput" value="message from JS" />
+    </div>
+    <div>
+        <button type="button" onclick="SendRawMessage()">Send raw message to .NET</button>
+    </div>
+    <div>
+        <textarea id="messageLog" style="width: 90%; height: 10em;"></textarea>
+    </div>
+</body>
+</html>

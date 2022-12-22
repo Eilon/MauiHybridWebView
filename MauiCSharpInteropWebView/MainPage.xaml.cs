@@ -42,7 +42,7 @@ public partial class MainPage : ContentPage
 
         _ = await webView.EvaluateJavaScriptAsync($"SendToJs('hi from .net, counter={count}!')");
         _ = await webView.InvokeJsMethodAsync("SendToJsWithArgs", 123.456789, "Nice!", DateTimeOffset.Now);
-        var sum = await webView.InvokeJsMethodAsync<int>("SendToJsAddNumbers", 123, 456);
+        var sum = await webView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);
         Debug.WriteLine($"JS Return value received with sum: {sum}");
     }
 
