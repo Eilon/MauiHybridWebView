@@ -6,7 +6,7 @@
 
     <Grid ColumnDefinitions="2*,1*,1*" RowDefinitions="Auto,*">
         <Label
-                Text="TODO: Build hybrid app"
+                Text="{Binding TodoAppTitle}"
                 FontSize="32"
                 HorizontalOptions="Center" />
 
