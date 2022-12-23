@@ -27,7 +27,8 @@ namespace MauiReactJSHybridApp
 
         private async void SendUpdatedTasksToJS(IList<TodoTask> tasks)
         {
-            _ = await myHybridWebView.InvokeJsMethodAsync("globalSetData", tasks);
+            _ = await MainThread.InvokeOnMainThreadAsync(async () =>
+                await myHybridWebView.InvokeJsMethodAsync("globalSetData", tasks));
         }
 
         private sealed class TodoJSInvokeTarget
