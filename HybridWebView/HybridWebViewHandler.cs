@@ -2,7 +2,7 @@
 
 namespace HybridWebView
 {
-    public class HybridWebViewHandler : WebViewHandler
+    public partial class HybridWebViewHandler : WebViewHandler
     {
         public static IPropertyMapper<IWebView, IWebViewHandler> HybridWebViewMapper = new PropertyMapper<IWebView, IWebViewHandler>(WebViewHandler.Mapper)
         {
