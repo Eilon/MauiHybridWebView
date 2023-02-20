@@ -115,13 +115,19 @@ namespace HybridWebView
         internal readonly Dictionary<string, (object,MethodInfo)> LocalRegisteredCallbacks = new();
         public void AddLocalCallback(object callingClass, string methodName)
         {
-            var action = callingClass.GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
+            MethodInfo action = callingClass.GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
 
             if (LocalRegisteredCallbacks.ContainsKey(action.Name))
                 LocalRegisteredCallbacks.Remove(action.Name);
 
             LocalRegisteredCallbacks.Add(action.Name, (callingClass, action));
         }
+        public void RemoveLocalCallback(string methodName)
+        {
+            if (LocalRegisteredCallbacks.ContainsKey(methodName))
+                LocalRegisteredCallbacks.Remove(methodName);
+        }
+
         private sealed class JSInvokeMethodData
         {
             public string MethodName { get; set; }
