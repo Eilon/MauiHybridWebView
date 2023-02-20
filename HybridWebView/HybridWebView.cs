@@ -87,18 +87,21 @@ namespace HybridWebView
                 throw new NotImplementedException($"The {nameof(JSInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
             }
 
-            object callingClass = JSInvokeTarget;
+            object containingClass = JSInvokeTarget;
             MethodInfo invokeMethod = JSInvokeTarget.GetType().GetMethod(invokeData.MethodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
                 
             if(invokeMethod is null)
             {
-                var test = LocalRegisteredCallbacks.Where(x => x.Key.Equals(invokeData.MethodName)).Select(x => x.Value).FirstOrDefault();
-                invokeMethod = test.Item2;
-                callingClass = test.Item1;
+                (object containingClass, MethodInfo method)? test = LocalRegisteredCallbacks.Where(x => x.Key.Equals(invokeData.MethodName)).Select(x => x.Value).FirstOrDefault();
 
+                if(test is not null)
+                {
+                    invokeMethod = test.Value.method;
+                    containingClass = test.Value.containingClass;
+                }
             }
 
-            if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
+            if (invokeData.ParamValues is not null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
             {
                 throw new InvalidOperationException($"The number of parameters on {nameof(JSInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
             }
@@ -108,19 +111,19 @@ namespace HybridWebView
                     .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
                     .ToArray();
 
-            var returnValue = invokeMethod.Invoke(callingClass, paramObjectValues);
+            invokeMethod.Invoke(containingClass, paramObjectValues);
         }
 
 
-        internal readonly Dictionary<string, (object,MethodInfo)> LocalRegisteredCallbacks = new();
-        public void AddLocalCallback(object callingClass, string methodName)
+        internal readonly Dictionary<string, (object containingClass, MethodInfo method)> LocalRegisteredCallbacks = new();
+        public void AddLocalCallback(object containingClass, string methodName)
         {
-            MethodInfo action = callingClass.GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
+            MethodInfo action = containingClass.GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
 
             if (LocalRegisteredCallbacks.ContainsKey(action.Name))
                 LocalRegisteredCallbacks.Remove(action.Name);
 
-            LocalRegisteredCallbacks.Add(action.Name, (callingClass, action));
+            LocalRegisteredCallbacks.Add(action.Name, (containingClass, action));
         }
         public void RemoveLocalCallback(string methodName)
         {

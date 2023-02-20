@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace MauiCSharpInteropWebView;
+﻿namespace MauiCSharpInteropWebView;
 
 public partial class MainPage : ContentPage
 {
@@ -15,6 +13,7 @@ public partial class MainPage : ContentPage
 
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
 
+        // Register in the constructor or anywhere else
         myHybridWebView.AddLocalCallback(this, nameof(AddLocalCallBackTest));
     }
 
