@@ -92,12 +92,12 @@ namespace HybridWebView
                 
             if(invokeMethod is null)
             {
-                (object containingClass, MethodInfo method)? test = LocalRegisteredCallbacks.Where(x => x.Key.Equals(invokeData.MethodName)).Select(x => x.Value).FirstOrDefault();
+                (object containingClass, MethodInfo method)? localMethod = LocalRegisteredCallbacks.Where(x => x.Key.Equals(invokeData.MethodName)).Select(x => x.Value).FirstOrDefault();
 
-                if(test is not null)
+                if(localMethod is not null)
                 {
-                    invokeMethod = test.Value.method;
-                    containingClass = test.Value.containingClass;
+                    invokeMethod = localMethod.Value.method;
+                    containingClass = localMethod.Value.containingClass;
                 }
             }
 
