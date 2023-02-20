@@ -1,4 +1,6 @@
-﻿namespace MauiCSharpInteropWebView;
+﻿using System.Reflection;
+
+namespace MauiCSharpInteropWebView;
 
 public partial class MainPage : ContentPage
 {
@@ -12,6 +14,10 @@ public partial class MainPage : ContentPage
         BindingContext = this;
 
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
+
+        myHybridWebView.AddLocalCallback(this, nameof(AddLocalCallBackTest));
+
+        myHybridWebView.AddLocalCallback(this, GetType().GetMethod(nameof(AddLocalCallBackTest), BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod));
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
@@ -24,6 +30,11 @@ public partial class MainPage : ContentPage
     private async void OnSendRawMessageToJS(object sender, EventArgs e)
     {
         _ = await myHybridWebView.EvaluateJavaScriptAsync($"SendToJs('Sent from .NET, the time is: {DateTimeOffset.Now}!')");
+    }
+
+    private async void AddLocalCallBackTest(string message, int value)
+    {
+        WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}, using a local registration");
     }
 
     private async void OnInvokeJSMethod(object sender, EventArgs e)

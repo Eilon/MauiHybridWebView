@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        function JsAddNumbers(a, b) {
+            var sum = a + b;
+            Log('Called from .NET with values (' + a + ', ' + b + '), and returning the sum: ' + sum);
+            return sum;
+        }
+
+        function CallDotNetMethod() {
+            Log('Calling a method in .NET with some parameters');
+
+			HybridWebView.SendInvokeMessageToDotNet("AddLocalCallBackTest", ["msg from js", 987]);
+        }
+    </script>
+    <script src="js/HybridWebView.js"></script>
+    <script src="js/extra_code.js"></script>
+    <link href="styles/my-styles.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>HybridWebView demo: Method invoke</h1>
+    <div class="navBar">
+        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | Method invoke
+    </div>
+    <div>
+        Methods can be invoked in both directions:
+
+        <ul>
+            <li>JavaScript can invoke .NET methods by calling <code>HybridWebView.SendInvokeMessageToDotNet("DotNetMethodName", ["param1", 123]);</code>.</li>
+            <li>.NET can invoke JavaScript methods by calling <code>var sum = await webView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);</code>.</li>
+        </ul>
+    </div>
+    <div>
+        <button type="button" onclick="CallDotNetMethod()">Call .NET method with some parameters</button>
+    </div>
+    <h2>
+        JS message log:
+    </h2>
+    <div>
+        <textarea id="messageLog" style="width: 90%; height: 10em;"></textarea>
+    </div>
+    <script>
+        // Notify .NET code which page we're on
+        HybridWebView.SendRawMessageToDotNet("page:2");
+    </script>
+</body>
+</html>

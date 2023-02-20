@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 
 namespace HybridWebView
 {
@@ -86,7 +87,16 @@ namespace HybridWebView
                 throw new NotImplementedException($"The {nameof(JSInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
             }
 
-            var invokeMethod = JSInvokeTarget.GetType().GetMethod(invokeData.MethodName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+            object callingClass = JSInvokeTarget;
+            MethodInfo invokeMethod = JSInvokeTarget.GetType().GetMethod(invokeData.MethodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
+                
+            if(invokeMethod is null)
+            {
+                var test = LocalRegisteredCallbacks.Where(x => x.Key.Equals(invokeData.MethodName)).Select(x => x.Value).FirstOrDefault();
+                invokeMethod = test.Item2;
+                callingClass = test.Item1;
+
+            }
 
             if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
             {
@@ -98,9 +108,18 @@ namespace HybridWebView
                     .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
                     .ToArray();
 
-            var returnValue = invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
+            var returnValue = invokeMethod.Invoke(callingClass, paramObjectValues);
         }
 
+
+        internal readonly Dictionary<string, (object,MethodInfo)> LocalRegisteredCallbacks = new();
+        public void AddLocalCallback(object callingClass, MethodInfo action)
+        {
+            if (LocalRegisteredCallbacks.ContainsKey(action.Name))
+                LocalRegisteredCallbacks.Remove(action.Name);
+
+            LocalRegisteredCallbacks.Add(action.Name, (callingClass, action));
+        }
         private sealed class JSInvokeMethodData
         {
             public string MethodName { get; set; }
