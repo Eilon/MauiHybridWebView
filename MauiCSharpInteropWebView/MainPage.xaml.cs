@@ -16,8 +16,6 @@ public partial class MainPage : ContentPage
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
 
         myHybridWebView.AddLocalCallback(this, nameof(AddLocalCallBackTest));
-
-        myHybridWebView.AddLocalCallback(this, GetType().GetMethod(nameof(AddLocalCallBackTest), BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod));
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
