@@ -11,10 +11,20 @@
             return sum;
         }
 
-        function CallDotNetMethod() {
+        async function CallDotNetMethod() {
             Log('Calling a method in .NET with some parameters');
 
-            HybridWebView.SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
+            try {
+                HybridWebView.SendInvokeMessageToDotNet("host", "CallMeFromScript", ["msg from js", 987]);
+
+                const hostObj = HybridWebView.CreateProxy("host");
+                const result = await hostObj.CallMeFromScriptReturn("Hello", 42);
+
+                Log("Method call Result was " + result);
+            }
+            catch (ex) {
+                Log(ex);
+            }
         }
     </script>
     <script src="js/HybridWebView.js"></script>
@@ -30,8 +40,19 @@
         Methods can be invoked in both directions:
 
         <ul>
-            <li>JavaScript can invoke .NET methods by calling <code>HybridWebView.SendInvokeMessageToDotNet("DotNetMethodName", ["param1", 123]);</code>.</li>
             <li>.NET can invoke JavaScript methods by calling <code>var sum = await webView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);</code>.</li>
+            <li>
+                JavaScript can invoke .NET methods by calling
+                <code>
+                    // Call the method directly
+                    HybridWebView.SendInvokeMessageToDotNet("HostClassName", "DotNetMethodName", ["param1", 123]);
+
+                    // Create a proxy
+                    const hostObj = HybridWebView.CreateProxy("host");
+                    const result = await hostObj.CallMeFromScriptReturn("Hello", 42);
+                </code>.
+            </li>
+            
         </ul>
     </div>
     <div>

@@ -11,7 +11,7 @@ public partial class MainPage : ContentPage
 
         BindingContext = this;
 
-        myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
+        myHybridWebView.ObjectHost.AddObject("host", new MyJSInvokeTarget(this));
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
@@ -68,6 +68,15 @@ public partial class MainPage : ContentPage
         public void CallMeFromScript(string message, int value)
         {
             _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
+        }
+
+        public async Task<int> CallMeFromScriptReturn(string message, int value, int? optional = 0)
+        {
+            _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value} and optional={optional}");
+            
+            await Task.Delay(50);            
+
+            return value;
         }
     }
 
