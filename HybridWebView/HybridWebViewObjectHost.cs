@@ -13,9 +13,9 @@ namespace HybridWebView
         /// </summary>
         private readonly ConcurrentDictionary<string, object> _hostObjects = new();
 
-        private readonly IWebView _webView;
+        private readonly WebView _webView;
 
-        internal HybridWebViewObjectHost(IWebView webView)
+        internal HybridWebViewObjectHost(WebView webView)
         {
             _webView = webView;
         }
@@ -153,9 +153,14 @@ namespace HybridWebView
             ResolveCallback(callbackId, JsonSerializer.Serialize(result));
         }
 
-
         private void ResolveCallback(int id, string json)
         {
+            if (_webView.Dispatcher.IsDispatchRequired)
+            {
+                _webView.Dispatcher.Dispatch(() => { ResolveCallback(id, json); });
+                return;
+            }
+
             _webView.EvaluateJavaScriptAsync($"HybridWebViewDotNetHost.Current.ResolveCallback({id}, '{json}')").ContinueWith(t =>
             {
                 if(t.Status == TaskStatus.Faulted)
@@ -168,6 +173,12 @@ namespace HybridWebView
 
         private void RejectCallback(int id, string message)
         {
+            if (_webView.Dispatcher.IsDispatchRequired)
+            {
+                _webView.Dispatcher.Dispatch(() => { RejectCallback(id, message); });
+                return;
+            }
+
             _webView.EvaluateJavaScriptAsync($"HybridWebViewDotNetHost.Current.RejectCallback({id}, '{message}')").ContinueWith(t =>
             {
                 if (t.Status == TaskStatus.Faulted)
