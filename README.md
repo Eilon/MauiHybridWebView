@@ -19,8 +19,19 @@ var sum = await myHybridWebView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 45
 
 And the reverse, JavaScript code calling a .NET method:
 
+```c#
+// Add an object called 'host' that can be called from JavaScript
+myHybridWebView.ObjectHost.AddObject("host", new MyJSInvokeTarget(this));
+```
+
 ```js
-HybridWebView.SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
+// Directly call a .Net method called CallMeFromScript
+HybridWebView.SendInvokeMessageToDotNet("host", "CallMeFromScript", ["msg from js", 987]);
+
+// Create a proxy
+const myDotNetObjectProxy = HybridWebView.CreateProxy("host");
+// Call the method, await the result (promise) to get the returned value.
+const result = await myDotNetObjectProxy.CallMeFromScriptReturn("Hello", 42);
 ```
 
 In addition to method invocation, sending "raw" messages is also supported.

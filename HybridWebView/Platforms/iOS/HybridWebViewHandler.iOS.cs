@@ -22,7 +22,7 @@ namespace HybridWebView
 
         private void MessageReceived(Uri uri, string message)
         {
-            ((HybridWebView)VirtualView).OnMessageReceived(message);
+            ((HybridWebView)VirtualView).RaiseMessageReceived(message);
         }
 
         private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
