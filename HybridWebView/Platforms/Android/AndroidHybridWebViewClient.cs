@@ -16,7 +16,10 @@ namespace HybridWebView
 
         public override WebResourceResponse ShouldInterceptRequest(AWebView view, IWebResourceRequest request)
         {
-            if (new Uri(request.Url.ToString()) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
+            var requestUri = request?.Url?.ToString();
+            requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
+
+            if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
                 var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
