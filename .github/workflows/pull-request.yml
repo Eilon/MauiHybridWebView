@@ -29,7 +29,7 @@ jobs:
           dotnet-version: |
             7.0.x
 
-      - name: "Restore NuGet packages (Windows)"
+      - name: "Restore NuGet packages"
         run: msbuild /t:restore /p:Configuration=Release MauiCSharpInteropWebView.sln
 
       # - name: "Publish bin logs as artifacts"
@@ -42,9 +42,15 @@ jobs:
       - name: "Build and pack HybridWebView"
         run: msbuild /t:build,pack /p:Configuration=Release HybridWebView/HybridWebView.csproj
 
+      - name: "Build sample: MauiCSharpInteropWebView"
+        run: msbuild /t:build /p:Configuration=Release MauiCSharpInteropWebView/MauiCSharpInteropWebView.csproj
+
+      - name: "Build sample: MauiReactJSHybridApp"
+        run: msbuild /t:build /p:Configuration=Release MauiReactJSHybridApp/MauiReactJSHybridApp.csproj
+
       - name: "Publish NuGet packages as artifacts"
         uses: actions/upload-artifact@v3
         with:
           name: nuget-packages
-          path: 'HybridWebView/bin/Release/*.nupkg'
+          path: 'artifacts/*.nupkg'
         if: matrix.os == 'windows-latest'
