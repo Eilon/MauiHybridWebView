@@ -30,14 +30,7 @@ jobs:
             7.0.x
 
       - name: "Restore NuGet packages"
-        run: msbuild /t:restore /p:Configuration=Release MauiCSharpInteropWebView.sln
-
-      # - name: "Publish bin logs as artifacts"
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: msbuild-binlogs
-      #     path: '**/*.binlog'
-      #   if: always()
+        run: dotnet restore /p:Configuration=Release MauiCSharpInteropWebView.sln
 
       - name: "Build and pack HybridWebView"
         run: msbuild /t:build,pack /p:Configuration=Release HybridWebView/HybridWebView.csproj
