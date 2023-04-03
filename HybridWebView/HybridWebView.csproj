@@ -17,4 +17,27 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+    <PropertyGroup>
+        <!-- Change these two values to control the version -->
+        <VersionMain>1.0.0</VersionMain>
+        <VersionPrelease>-preview1</VersionPrelease>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Version>$(VersionMain)</Version>
+        <AssemblyVersion>$(VersionMain)</AssemblyVersion>
+        <FileVersion>$(VersionMain)</FileVersion>
+
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Authors>Eilon Lipton</Authors>
+        <NeutralLanguage>en</NeutralLanguage>
+        <RepositoryUrl>https://github.com/Eilon/MauiCSharpInteropWebView.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Eilon/MauiCSharpInteropWebView</PackageProjectUrl>
+        <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+        <Copyright>© 2023 Eilon Lipton</Copyright>
+        <PackageVersion>$(VersionMain)$(VersionPrelease)</PackageVersion>
+        <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts</PackageOutputPath>
+        <LicenseFile>$(MSBuildThisFileDirectory)..\LICENSE</LicenseFile>
+    </PropertyGroup>
+
 </Project>

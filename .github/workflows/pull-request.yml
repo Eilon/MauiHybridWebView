@@ -1,0 +1,48 @@
+name: HybridWebView PR Build
+on:
+  - pull_request
+  - workflow_dispatch
+
+jobs:
+  build:
+    name: "PR build"
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_NOLOGO: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - name: Clone source
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET 7 SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            7.0.x
+
+      - name: Install MAUI Workload
+        run: dotnet workload install maui --ignore-failed-sources
+
+      - name: "Restore NuGet packages"
+        run: dotnet restore /p:Configuration=Release MauiCSharpInteropWebView.sln
+
+      - name: "Build and pack HybridWebView"
+        run: dotnet pack /p:Configuration=Release HybridWebView/HybridWebView.csproj
+
+      - name: "Build sample: MauiCSharpInteropWebView"
+        run: dotnet build /p:Configuration=Release MauiCSharpInteropWebView/MauiCSharpInteropWebView.csproj
+
+      - name: "Build sample: MauiReactJSHybridApp"
+        run: dotnet build /p:Configuration=Release MauiReactJSHybridApp/MauiReactJSHybridApp.csproj
+
+      - name: "Publish NuGet packages as artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuget-packages
+          path: 'artifacts/*.nupkg'
+        if: matrix.os == 'windows-latest'
