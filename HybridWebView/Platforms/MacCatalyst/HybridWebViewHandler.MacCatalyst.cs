@@ -80,6 +80,8 @@ namespace HybridWebView
 
             private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
             {
+                url = QueryStringHelper.RemovePossibleQueryString(url);
+
                 if (new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
                 {
                     var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
