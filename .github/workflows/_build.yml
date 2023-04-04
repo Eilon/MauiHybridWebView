@@ -1,0 +1,15 @@
+name: HybridWebView reusable build logic
+
+on:
+  workflow_call:
+    inputs:
+      publish-packages:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  call-build-workflow:
+    uses: ./.github/workflows/_build.yml
+    with:
+      publish-packages: true
