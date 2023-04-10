@@ -1,0 +1,10 @@
+name: HybridWebView Publish to nuget.org
+on:
+  workflow_dispatch:
+
+jobs:
+  call-build-workflow:
+    uses: ./.github/workflows/_build.yml
+    with:
+      publish-packages: true
+      nuget-org-push: true
