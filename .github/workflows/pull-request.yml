@@ -8,3 +8,4 @@ jobs:
     uses: ./.github/workflows/_build.yml
     with:
       publish-packages: false
+      nuget-org-push: false
