@@ -34,18 +34,6 @@ jobs:
       - name: "Build and pack HybridWebView"
         run: dotnet pack /p:Configuration=Release HybridWebView/HybridWebView.csproj
 
-      - name: "Publish NuGet packages as artifacts"
-        uses: actions/upload-artifact@v3
-        with:
-          name: nuget-packages
-          path: 'artifacts/*.nupkg'
-
-      - name: "Publish NuGet symbol packages as artifacts"
-        uses: actions/upload-artifact@v3
-        with:
-          name: nuget-packages
-          path: 'artifacts/*.snupkg'
-
       - name: "Publish NuGet packages to nuget.org"
         run: |
           nuget push "artifacts/*.nupkg" -ApiKey %NUGET_AUTH_TOKEN% -Source https://api.nuget.org/v3/index.json
