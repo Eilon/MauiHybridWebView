@@ -1,13 +1,7 @@
-name: HybridWebView reusable build logic
-
+name: HybridWebView Publish to nuget.org
 on:
-  workflow_call:
-    inputs:
-      publish-packages:
-        required: false
-        type: boolean
-        default: false
-       
+  workflow_dispatch:
+
 jobs:
   build:
     name: "Build"
@@ -17,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
     steps:
       - name: Clone source
         uses: actions/checkout@v3.1.0
@@ -39,12 +33,6 @@ jobs:
       - name: "Build and pack HybridWebView"
         run: dotnet pack /p:Configuration=Release HybridWebView/HybridWebView.csproj
 
-      - name: "Build sample: MauiCSharpInteropWebView"
-        run: dotnet build /p:Configuration=Release MauiCSharpInteropWebView/MauiCSharpInteropWebView.csproj
-
-      - name: "Build sample: MauiReactJSHybridApp"
-        run: dotnet build /p:Configuration=Release MauiReactJSHybridApp/MauiReactJSHybridApp.csproj
-
       - name: "Publish NuGet packages as artifacts"
         uses: actions/upload-artifact@v3
         with:
@@ -52,4 +40,8 @@ jobs:
           path: |
             'artifacts/*.nupkg'
             'artifacts/*.snupkg'
-        if: matrix.os == 'windows-latest' && ${{ inputs.publish-packages }}
+
+      - name: "Publish NuGet packages to nuget.org"
+        run: |
+          nuget push "artifacts/*.nupkg" -ApiKey $NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
+          nuget push "artifacts/*.snupkg" -ApiKey $NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
