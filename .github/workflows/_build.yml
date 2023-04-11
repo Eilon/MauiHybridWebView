@@ -7,10 +7,6 @@ on:
         required: false
         type: boolean
         default: false
-      nuget-org-push:
-        required: false
-        type: boolean
-        default: false
        
 jobs:
   build:
@@ -57,9 +53,3 @@ jobs:
             'artifacts/*.nupkg'
             'artifacts/*.snupkg'
         if: matrix.os == 'windows-latest' && ${{ inputs.publish-packages }}
-
-      - name: "Publish NuGet packages to nuget.org"
-        run: |
-          nuget push "artifacts/*.nupkg" -SkipDuplicate -ApiKey $NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
-          nuget push "artifacts/*.snupkg" -SkipDuplicate -ApiKey $NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
-        if: matrix.os == 'windows-latest' && ${{ inputs.nuget-org-push }}
