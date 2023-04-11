@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
-            7.0.4
+            7.0.202
 
       - name: Install MAUI Workload
         run: dotnet workload install maui --ignore-failed-sources
