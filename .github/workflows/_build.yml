@@ -49,7 +49,12 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nuget-packages
-          path: |
-            'artifacts/*.nupkg'
-            'artifacts/*.snupkg'
-        if: matrix.os == 'windows-latest' && ${{ inputs.publish-packages }}
+          path: 'artifacts/*.nupkg'
+        if: ${{ matrix.os == 'windows-latest' && inputs.publish-packages }}
+
+      - name: "Publish NuGet symbol packages as artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuget-packages
+          path: 'artifacts/*.snupkg'
+        if: ${{ matrix.os == 'windows-latest' && inputs.publish-packages }}

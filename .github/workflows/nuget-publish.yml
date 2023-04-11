@@ -37,9 +37,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nuget-packages
-          path: |
-            'artifacts/*.nupkg'
-            'artifacts/*.snupkg'
+          path: 'artifacts/*.nupkg'
+
+      - name: "Publish NuGet symbol packages as artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuget-packages
+          path: 'artifacts/*.snupkg'
 
       - name: "Publish NuGet packages to nuget.org"
         run: |
