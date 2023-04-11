@@ -28,7 +28,7 @@
         <AssemblyVersion>$(VersionMain)</AssemblyVersion>
         <FileVersion>$(VersionMain)</FileVersion>
 
-		<PackageId>EJL.MauiHybridWebView</PackageId>
+        <PackageId>EJL.MauiHybridWebView</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>Eilon Lipton</Authors>
         <NeutralLanguage>en</NeutralLanguage>
