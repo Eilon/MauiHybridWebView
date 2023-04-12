@@ -2,11 +2,11 @@
 {
     public class HybridWebViewRawMessageReceivedEventArgs : EventArgs
     {
-        public HybridWebViewRawMessageReceivedEventArgs(string message)
+        public HybridWebViewRawMessageReceivedEventArgs(string? message)
         {
             Message = message;
         }
 
-        public string Message { get; }
+        public string? Message { get; }
     }
 }
