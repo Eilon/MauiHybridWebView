@@ -34,6 +34,7 @@
 		<FileVersion>$(VersionMain)</FileVersion>
 
 		<PackageId>EJL.MauiHybridWebView</PackageId>
+		<Description>A HybridWebView control for .NET MAUI that enables embedding web UI (HTML/JS/CSS) in cross-platform native apps.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Authors>Eilon Lipton</Authors>
 		<NeutralLanguage>en</NeutralLanguage>
