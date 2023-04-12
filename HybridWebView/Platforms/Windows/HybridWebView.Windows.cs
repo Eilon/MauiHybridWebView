@@ -67,9 +67,14 @@ namespace HybridWebView
                     };
                 }
 
-                var assetPath = Path.Combine(HybridAssetRoot!, relativePath!);
+                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
 
-                using var contentStream = await GetAssetStreamAsync(assetPath);
+                if (contentStream is null)
+                {
+                    var assetPath = Path.Combine(HybridAssetRoot!, relativePath!);
+                    contentStream = await GetAssetStreamAsync(assetPath);
+                }
+
                 if (contentStream is null)
                 {
                     var notFoundContent = "Resource not found (404)";
@@ -88,6 +93,11 @@ namespace HybridWebView
                         ReasonPhrase: "OK",
                         Headers: GetHeaderString(contentType, (int)contentStream.Length)
                     );
+                }
+
+                if (contentStream is not null)
+                {
+                    contentStream.Dispose();
                 }
             }
 

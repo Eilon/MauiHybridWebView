@@ -66,7 +66,7 @@ namespace HybridWebView
 
         private Stream? PlatformOpenAppPackageFile(string filename)
         {
-            filename = NormalizePath(filename);
+            filename = PathUtils.NormalizePath(filename);
 
             try
             {
@@ -77,11 +77,6 @@ namespace HybridWebView
                 return null;
             }
         }
-
-        private static string NormalizePath(string filename) =>
-            filename
-                .Replace('\\', Path.DirectorySeparatorChar)
-                .Replace('/', Path.DirectorySeparatorChar);
 
         private protected static IDictionary<string, string> GetHeaders(string contentType) =>
             new Dictionary<string, string> {

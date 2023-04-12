@@ -19,6 +19,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="KnownStaticFiles\HybridWebView.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="KnownStaticFiles\HybridWebView.js" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
