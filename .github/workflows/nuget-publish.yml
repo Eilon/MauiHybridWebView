@@ -36,5 +36,5 @@ jobs:
 
       - name: "Publish NuGet packages to nuget.org"
         run: |
-          nuget push "artifacts/*.nupkg" -ApiKey %NUGET_AUTH_TOKEN% -Source https://api.nuget.org/v3/index.json
-          nuget push "artifacts/*.snupkg" -ApiKey %NUGET_AUTH_TOKEN% -Source https://api.nuget.org/v3/index.json
+          nuget push "artifacts\*.nupkg" -ApiKey %NUGET_AUTH_TOKEN% -Source https://api.nuget.org/v3/index.json
+          nuget push "artifacts\*.snupkg" -ApiKey %NUGET_AUTH_TOKEN% -Source https://api.nuget.org/v3/index.json
