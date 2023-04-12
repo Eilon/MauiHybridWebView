@@ -20,11 +20,11 @@ namespace HybridWebView
 
         private static readonly Uri AppOriginUri = new(AppOrigin);
 
-        private CoreWebView2Environment _coreWebView2Environment;
+        private CoreWebView2Environment? _coreWebView2Environment;
 
         async partial void InitializeHybridWebView()
         {
-            var wv2 = (Microsoft.UI.Xaml.Controls.WebView2)Handler.PlatformView;
+            var wv2 = (Microsoft.UI.Xaml.Controls.WebView2)Handler!.PlatformView!;
             wv2.WebMessageReceived += Wv2_WebMessageReceived;
 
             _coreWebView2Environment = await CoreWebView2Environment.CreateAsync();
@@ -67,13 +67,13 @@ namespace HybridWebView
                     };
                 }
 
-                var assetPath = Path.Combine(HybridAssetRoot, relativePath);
+                var assetPath = Path.Combine(HybridAssetRoot!, relativePath!);
 
                 using var contentStream = await GetAssetStreamAsync(assetPath);
                 if (contentStream is null)
                 {
                     var notFoundContent = "Resource not found (404)";
-                    eventArgs.Response = _coreWebView2Environment.CreateWebResourceResponse(
+                    eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
                         Content: null,
                         StatusCode: 404,
                         ReasonPhrase: "Not Found",
@@ -82,7 +82,7 @@ namespace HybridWebView
                 }
                 else
                 {
-                    eventArgs.Response = _coreWebView2Environment.CreateWebResourceResponse(
+                    eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
                         Content: await CopyContentToRandomAccessStreamAsync(contentStream),
                         StatusCode: 200,
                         ReasonPhrase: "OK",

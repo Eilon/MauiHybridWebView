@@ -18,11 +18,11 @@ namespace HybridWebView
 
         internal static readonly Uri AppOriginUri = new(AppOrigin);
 
-        private HybridWebViewJavaScriptInterface _javaScriptInterface;
+        private HybridWebViewJavaScriptInterface? _javaScriptInterface;
 
-        async partial void InitializeHybridWebView()
+        partial void InitializeHybridWebView()
         {
-            var awv = (AWebView)Handler.PlatformView;
+            var awv = (AWebView)Handler!.PlatformView!;
             awv.Settings.JavaScriptEnabled = true;
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);

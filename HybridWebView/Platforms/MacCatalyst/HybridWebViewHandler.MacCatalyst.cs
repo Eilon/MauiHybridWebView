@@ -88,11 +88,11 @@ namespace HybridWebView
 
                     var hwv = (HybridWebView)_webViewHandler.VirtualView;
 
-                    var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot);
+                    var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot!);
 
                     if (string.IsNullOrEmpty(relativePath))
                     {
-                        relativePath = hwv.MainFile.Replace('\\', '/');
+                        relativePath = hwv.MainFile!.Replace('\\', '/');
                         contentType = "text/html";
                     }
                     else

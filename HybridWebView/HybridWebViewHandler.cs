@@ -32,7 +32,7 @@ namespace HybridWebView
                 // in such a way that it knows of the custom MauiWebViewClient that we're creating. So, we use private reflection to set it on the
                 // instance. We might end up duplicating WebView/BlazorWebView anyway, in which case we wouldn't need this workaround.
                 var webViewClientField = typeof(WebViewHandler).GetField("_webViewClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy);
-                webViewClientField.SetValue(handler, webViewClient);
+                webViewClientField!.SetValue(handler, webViewClient);
             }
         }
 #endif
