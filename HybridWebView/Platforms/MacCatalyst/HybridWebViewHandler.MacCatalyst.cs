@@ -107,6 +107,15 @@ namespace HybridWebView
                         };
                     }
 
+                    var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                    if (contentStream is not null)
+                    {
+                        statusCode = 200;
+                        using var ms = new MemoryStream();
+                        contentStream.CopyTo(ms);
+                        return ms.ToArray();
+                    }
+
                     var assetPath = Path.Combine(bundleRootDir, relativePath);
 
                     if (File.Exists(assetPath))
