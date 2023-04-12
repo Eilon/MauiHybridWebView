@@ -18,31 +18,36 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
-    <PropertyGroup>
-        <!-- Change these two values to control the version -->
-        <VersionMain>1.0.0</VersionMain>
-        <VersionPrelease>-preview2</VersionPrelease>
-    </PropertyGroup>
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
-    <PropertyGroup>
-        <Version>$(VersionMain)</Version>
-        <AssemblyVersion>$(VersionMain)</AssemblyVersion>
-        <FileVersion>$(VersionMain)</FileVersion>
+	<PropertyGroup>
+		<!-- Change these two values to control the version -->
+		<VersionMain>1.0.0</VersionMain>
+		<VersionPrelease>-preview2</VersionPrelease>
+	</PropertyGroup>
 
-        <PackageId>EJL.MauiHybridWebView</PackageId>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Authors>Eilon Lipton</Authors>
-        <NeutralLanguage>en</NeutralLanguage>
-        <RepositoryUrl>https://github.com/Eilon/MauiCSharpInteropWebView.git</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/Eilon/MauiCSharpInteropWebView</PackageProjectUrl>
-        <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-        <Copyright>© 2023 Eilon Lipton</Copyright>
-        <PackageVersion>$(VersionMain)$(VersionPrelease)</PackageVersion>
-        <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts</PackageOutputPath>
-        <LicenseFile>$(MSBuildThisFileDirectory)..\LICENSE</LicenseFile>
+	<PropertyGroup>
+		<Version>$(VersionMain)</Version>
+		<AssemblyVersion>$(VersionMain)</AssemblyVersion>
+		<FileVersion>$(VersionMain)</FileVersion>
 
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    </PropertyGroup>
+		<PackageId>EJL.MauiHybridWebView</PackageId>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Authors>Eilon Lipton</Authors>
+		<NeutralLanguage>en</NeutralLanguage>
+		<RepositoryUrl>https://github.com/Eilon/MauiCSharpInteropWebView.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Eilon/MauiCSharpInteropWebView</PackageProjectUrl>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+		<Copyright>© 2023 Eilon Lipton</Copyright>
+		<PackageVersion>$(VersionMain)$(VersionPrelease)</PackageVersion>
+		<PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts</PackageOutputPath>
+		<LicenseFile>$(MSBuildThisFileDirectory)..\LICENSE</LicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
 
 </Project>
