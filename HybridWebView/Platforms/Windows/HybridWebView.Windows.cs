@@ -95,10 +95,7 @@ namespace HybridWebView
                     );
                 }
 
-                if (contentStream is not null)
-                {
-                    contentStream.Dispose();
-                }
+                contentStream?.Dispose();
             }
 
             // Notify WebView2 that the deferred (async) operation is complete and we set a response.

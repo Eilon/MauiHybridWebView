@@ -40,9 +40,14 @@ namespace HybridWebView
                     };
                 }
 
-                var assetPath = Path.Combine(((HybridWebView)_handler.VirtualView).HybridAssetRoot!, relativePath!);
+                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
 
-                var contentStream = PlatformOpenAppPackageFile(assetPath);
+                if (contentStream is null)
+                {
+                    var assetPath = Path.Combine(((HybridWebView)_handler.VirtualView).HybridAssetRoot!, relativePath!);
+                    contentStream = PlatformOpenAppPackageFile(assetPath);
+                }
+
                 if (contentStream is null)
                 {
                     var notFoundContent = "Resource not found (404)";
