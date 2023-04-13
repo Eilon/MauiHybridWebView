@@ -81,7 +81,7 @@ Note: If you'd like to check out an already completed sample, go to https://gith
         <head>
             <meta charset="utf-8" />
             <title></title>
-            <script src="HybridWebView.js"></script>
+            <script src="_hwv/HybridWebView.js"></script>
             <script src="myapp.js"></script>
         </head>
         <body>
@@ -100,47 +100,6 @@ Note: If you'd like to check out an already completed sample, go to https://gith
             var message = document.getElementById('messageInput').value;
             HybridWebView.SendRawMessageToDotNet(message);
         }
-        ```
-    1. Add one last file named `HybridWebView.js` with the following contents:
-        ```js
-        // Standard methods for HybridWebView
-
-        window.HybridWebView = {
-            "SendRawMessageToDotNet": function SendRawMessageToDotNet(message) {
-                window.HybridWebView.SendMessageToDotNet(0, message);
-            },
-
-            "SendInvokeMessageToDotNet": function SendInvokeMessageToDotNet(methodName, paramValues) {
-                if (typeof paramValues !== 'undefined') {
-                    if (!Array.isArray(paramValues)) {
-                        paramValues = [paramValues];
-                    }
-                    for (var i = 0; i < paramValues.length; i++) {
-                        paramValues[i] = JSON.stringify(paramValues[i]);
-                    }
-                }
-
-                window.HybridWebView.SendMessageToDotNet(1, JSON.stringify({ "MethodName": methodName, "ParamValues": paramValues }));
-            },
-
-            "SendMessageToDotNet": function SendMessageToDotNet(messageType, messageContent) {
-                var message = JSON.stringify({ "MessageType": messageType, "MessageContent": messageContent });
-
-                if (window.chrome && window.chrome.webview) {
-                    // Windows WebView2
-                    window.chrome.webview.postMessage(message);
-                }
-                else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop)
-                {
-                    // iOS and MacCatalyst WKWebView
-                    window.webkit.messageHandlers.webwindowinterop.postMessage(message);
-                }
-                else {
-                    // Android WebView
-                    hybridWebViewHost.sendMessage(message);
-                }
-            }
-        };
         ```
 1. You can now run your .NET MAUI app with the HybridWebView control!
     1. You can run it on Windows, Android, iOS, or macOS
