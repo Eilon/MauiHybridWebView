@@ -25,8 +25,7 @@ window.HybridWebView = {
             // Windows WebView2
             window.chrome.webview.postMessage(message);
         }
-        else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop)
-        {
+        else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
             window.webkit.messageHandlers.webwindowinterop.postMessage(message);
         }
