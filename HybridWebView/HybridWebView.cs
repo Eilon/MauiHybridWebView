@@ -11,7 +11,7 @@ namespace HybridWebView
         ///  The path within the app's "Raw" asset resources that contain the web app's contents. For example, if the
         ///  files are located in "ProjectFolder/Resources/Raw/hybrid_root", then set this property to "hybrid_root".
         /// </summary>
-        public string HybridAssetRoot { get; set; }
+        public string HybridAssetRoot { get; set; } = string.Empty;
 
         /// <summary>
         /// The target object for JavaScript method invocations. When an "invoke" message is sent from JavaScript,
