@@ -1,5 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using System;
+using System.Diagnostics.Tracing;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Storage.Streams;
 
@@ -19,11 +20,11 @@ namespace HybridWebView
 
         private static readonly Uri AppOriginUri = new(AppOrigin);
 
-        private CoreWebView2Environment _coreWebView2Environment;
+        private CoreWebView2Environment? _coreWebView2Environment;
 
         async partial void InitializeHybridWebView()
         {
-            var wv2 = (Microsoft.UI.Xaml.Controls.WebView2)Handler.PlatformView;
+            var wv2 = (Microsoft.UI.Xaml.Controls.WebView2)Handler!.PlatformView!;
             wv2.WebMessageReceived += Wv2_WebMessageReceived;
 
             _coreWebView2Environment = await CoreWebView2Environment.CreateAsync();
@@ -37,12 +38,14 @@ namespace HybridWebView
             wv2.Source = new Uri(AppOrigin);
         }
 
-        private async void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+        private async void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
         {
             // Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
-            using var deferral = args.GetDeferral();
+            using var deferral = eventArgs.GetDeferral();
 
-            if (new Uri(args.Request.Uri) is Uri uri && AppOriginUri.IsBaseOf(uri))
+            var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+
+            if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
             {
                 var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
@@ -64,13 +67,18 @@ namespace HybridWebView
                     };
                 }
 
-                var assetPath = Path.Combine(HybridAssetRoot, relativePath);
+                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
 
-                using var contentStream = await GetAssetStreamAsync(assetPath);
+                if (contentStream is null)
+                {
+                    var assetPath = Path.Combine(HybridAssetRoot!, relativePath!);
+                    contentStream = await GetAssetStreamAsync(assetPath);
+                }
+
                 if (contentStream is null)
                 {
                     var notFoundContent = "Resource not found (404)";
-                    args.Response = _coreWebView2Environment.CreateWebResourceResponse(
+                    eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
                         Content: null,
                         StatusCode: 404,
                         ReasonPhrase: "Not Found",
@@ -79,13 +87,15 @@ namespace HybridWebView
                 }
                 else
                 {
-                    args.Response = _coreWebView2Environment.CreateWebResourceResponse(
+                    eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
                         Content: await CopyContentToRandomAccessStreamAsync(contentStream),
                         StatusCode: 200,
                         ReasonPhrase: "OK",
                         Headers: GetHeaderString(contentType, (int)contentStream.Length)
                     );
                 }
+
+                contentStream?.Dispose();
             }
 
             // Notify WebView2 that the deferred (async) operation is complete and we set a response.

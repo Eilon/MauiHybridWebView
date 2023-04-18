@@ -13,10 +13,12 @@ namespace HybridWebView
         {
             _handler = handler;
         }
-
-        public override WebResourceResponse ShouldInterceptRequest(AWebView view, IWebResourceRequest request)
+        public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
         {
-            if (new Uri(request.Url.ToString()) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
+            var requestUri = request?.Url?.ToString();
+            requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
+
+            if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
                 var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
@@ -38,9 +40,14 @@ namespace HybridWebView
                     };
                 }
 
-                var assetPath = Path.Combine(((HybridWebView)_handler.VirtualView).HybridAssetRoot, relativePath);
+                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
 
-                var contentStream = PlatformOpenAppPackageFile(assetPath);
+                if (contentStream is null)
+                {
+                    var assetPath = Path.Combine(((HybridWebView)_handler.VirtualView).HybridAssetRoot!, relativePath!);
+                    contentStream = PlatformOpenAppPackageFile(assetPath);
+                }
+
                 if (contentStream is null)
                 {
                     var notFoundContent = "Resource not found (404)";
@@ -62,13 +69,13 @@ namespace HybridWebView
             }
         }
 
-        Stream PlatformOpenAppPackageFile(string filename)
+        private Stream? PlatformOpenAppPackageFile(string filename)
         {
-            filename = FileSystemUtils.NormalizePath(filename);
+            filename = PathUtils.NormalizePath(filename);
 
             try
             {
-                return _handler.Context.Assets.Open(filename);
+                return _handler.Context.Assets?.Open(filename);
             }
             catch (Java.IO.FileNotFoundException)
             {
@@ -76,13 +83,6 @@ namespace HybridWebView
             }
         }
 
-        static partial class FileSystemUtils
-        {
-            public static string NormalizePath(string filename) =>
-                filename
-                    .Replace('\\', Path.DirectorySeparatorChar)
-                    .Replace('/', Path.DirectorySeparatorChar);
-        }
         private protected static IDictionary<string, string> GetHeaders(string contentType) =>
             new Dictionary<string, string> {
                 { "Content-Type", contentType },

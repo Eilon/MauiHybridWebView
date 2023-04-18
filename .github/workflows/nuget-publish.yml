@@ -1,0 +1,40 @@
+name: HybridWebView Publish to nuget.org
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_NOLOGO: true
+      NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    steps:
+      - name: Clone source
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET 7 SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            7.0.202
+
+      - name: Install MAUI Workload
+        run: dotnet workload install maui --ignore-failed-sources
+
+      - name: "Restore NuGet packages"
+        run: dotnet restore /p:Configuration=Release MauiCSharpInteropWebView.sln
+
+      - name: "Build and pack HybridWebView"
+        run: dotnet pack /p:Configuration=Release HybridWebView/HybridWebView.csproj
+
+      - name: "Publish NuGet packages to nuget.org"
+        run: |
+          nuget push "artifacts\*.nupkg" --skip-duplicate -ApiKey $env:NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
+          nuget push "artifacts\*.snupkg" --skip-duplicate -ApiKey $env:NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json

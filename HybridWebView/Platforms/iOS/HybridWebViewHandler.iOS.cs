@@ -80,17 +80,19 @@ namespace HybridWebView
 
             private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
             {
+                url = QueryStringHelper.RemovePossibleQueryString(url);
+
                 if (new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
                 {
                     var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
 
                     var hwv = (HybridWebView)_webViewHandler.VirtualView;
 
-                    var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot);
+                    var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot!);
 
                     if (string.IsNullOrEmpty(relativePath))
                     {
-                        relativePath = hwv.MainFile.Replace('\\', '/');
+                        relativePath = hwv.MainFile!.Replace('\\', '/');
                         contentType = "text/html";
                     }
                     else
@@ -103,6 +105,15 @@ namespace HybridWebView
                             ".css" => "text/css",
                             _ => "text/plain",
                         };
+                    }
+
+                    var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                    if (contentStream is not null)
+                    {
+                        statusCode = 200;
+                        using var ms = new MemoryStream();
+                        contentStream.CopyTo(ms);
+                        return ms.ToArray();
                     }
 
                     var assetPath = Path.Combine(bundleRootDir, relativePath);
