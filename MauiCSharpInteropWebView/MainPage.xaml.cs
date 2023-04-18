@@ -84,5 +84,6 @@ public partial class MainPage : ContentPage
         MainPage = 0,
         RawMessages = 1,
         MethodInvoke = 2,
+        ManualRegister = 3,
     }
 }
