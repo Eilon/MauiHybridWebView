@@ -10,13 +10,19 @@ namespace HybridWebView
         internal const string AppOrigin = "app://" + AppHostAddress + "/";
         internal static readonly Uri AppOriginUri = new(AppOrigin);
 
-        partial void InitializeHybridWebView()
-        {
-            var wv = (WKWebView)Handler!.PlatformView!;
+        private WKWebView PlatformWebView => (WKWebView)Handler!.PlatformView!;
 
-            using var nsUrl = new NSUrl(AppOrigin);
+        private partial Task InitializeHybridWebView()
+        {
+            return Task.CompletedTask;
+        }
+
+        private partial void NavigateCore(string url)
+        {
+            using var nsUrl = new NSUrl(new Uri(AppOriginUri, url).ToString());
             using var request = new NSUrlRequest(nsUrl);
-            wv.LoadRequest(request);
+
+            PlatformWebView.LoadRequest(request);
         }
     }
 }
