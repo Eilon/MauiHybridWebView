@@ -22,20 +22,25 @@ namespace HybridWebView
 
         private CoreWebView2Environment? _coreWebView2Environment;
 
-        async partial void InitializeHybridWebView()
+        private Microsoft.UI.Xaml.Controls.WebView2 PlatformWebView => (Microsoft.UI.Xaml.Controls.WebView2)Handler!.PlatformView!;
+
+        private partial async Task InitializeHybridWebView()
         {
-            var wv2 = (Microsoft.UI.Xaml.Controls.WebView2)Handler!.PlatformView!;
-            wv2.WebMessageReceived += Wv2_WebMessageReceived;
+            PlatformWebView.WebMessageReceived += Wv2_WebMessageReceived;
 
             _coreWebView2Environment = await CoreWebView2Environment.CreateAsync();
 
-            await wv2.EnsureCoreWebView2Async();
+            await PlatformWebView.EnsureCoreWebView2Async();
 
-            wv2.CoreWebView2.Settings.IsWebMessageEnabled = true;
-            wv2.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
-            wv2.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
+            PlatformWebView.CoreWebView2.Settings.IsWebMessageEnabled = true;
+            PlatformWebView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+            PlatformWebView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
 
-            wv2.Source = new Uri(AppOrigin);
+        }
+
+        private partial void NavigateCore(string url)
+        {
+            PlatformWebView.Source = new Uri(new Uri(AppOriginUri, url).ToString());
         }
 
         private async void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)

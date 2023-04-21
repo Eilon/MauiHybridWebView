@@ -11,6 +11,11 @@ namespace HybridWebView
         public string? MainFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the path for initial navigation after the content is finished loading. The default value is <c>/</c>.
+        /// </summary>
+        public string StartPath { get; set; } = "/";
+
+        /// <summary>
         ///  The path within the app's "Raw" asset resources that contain the web app's contents. For example, if the
         ///  files are located in "ProjectFolder/Resources/Raw/hybrid_root", then set this property to "hybrid_root".
         /// </summary>
@@ -24,14 +29,30 @@ namespace HybridWebView
 
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
-        protected override void OnHandlerChanged()
+        public void Navigate(string url)
+        {
+            NavigateCore(url);
+        }
+
+        protected override async void OnHandlerChanged()
         {
             base.OnHandlerChanged();
 
-            InitializeHybridWebView();
+            await InitializeHybridWebView();
+
+            Navigate(StartPath);
         }
 
-        partial void InitializeHybridWebView();
+        private partial Task InitializeHybridWebView();
+
+        private partial void NavigateCore(string url);
+
+
+#if !ANDROID && !IOS && !MACCATALYST && !WINDOWS
+        private partial Task InitializeHybridWebView() => throw null!;
+
+        private partial void NavigateCore(string url) => throw null!;
+#endif
 
         /// <summary>
         /// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
