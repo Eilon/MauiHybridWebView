@@ -10,7 +10,7 @@
                 FontSize="32"
                 HorizontalOptions="Center" />
 
-        <hwv:HybridWebView Grid.Row="1" x:Name="myHybridWebView" HybridAssetRoot="ReactTodoApp" MainFile="index.html" />
+        <hwv:HybridWebView Grid.Row="1" x:Name="myHybridWebView" HybridAssetRoot="ReactTodoApp" />
     </Grid>
 
 </ContentPage>

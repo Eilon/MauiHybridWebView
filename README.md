@@ -58,7 +58,7 @@ Note: If you'd like to check out an already completed sample, go to https://gith
     1. Open the `MainPage.xaml` file
     1. Delete the `<ScrollView>` control and all of its contents
     1. Add a `xmlns:ejl="clr-namespace:HybridWebView;assembly=HybridWebView"` declaration to the top-level `<ContentPage ....>` tag
-    1. Add the markup `<ejl:HybridWebView HybridAssetRoot="hybrid_root" MainFile="index.html" RawMessageReceived="OnHybridWebViewRawMessageReceived" />` inside the `<ContentPage>` tag
+    1. Add the markup `<ejl:HybridWebView HybridAssetRoot="hybrid_root" RawMessageReceived="OnHybridWebViewRawMessageReceived" />` inside the `<ContentPage>` tag
     1. Open the `MainPage.xaml.cs` file
     1. Delete the `count` field, and the `OnCounterClicked` method, and replace it with the following code:
         ```c#
