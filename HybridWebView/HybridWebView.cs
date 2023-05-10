@@ -5,10 +5,10 @@ namespace HybridWebView
     public partial class HybridWebView : WebView
     {
         /// <summary>
-        /// Specifies the file within the <see cref="HybridAssetRoot"/> that should be served as the main file. Typically
-        /// this would be a file such as <c>index.html</c>.
+        /// Specifies the file within the <see cref="HybridAssetRoot"/> that should be served as the main file. The
+        /// default value is <c>index.html</c>.
         /// </summary>
-        public string? MainFile { get; set; }
+        public string? MainFile { get; set; } = "index.html";
 
         /// <summary>
         /// Gets or sets the path for initial navigation after the content is finished loading. The default value is <c>/</c>.
