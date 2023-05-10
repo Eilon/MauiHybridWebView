@@ -21,10 +21,12 @@ namespace HybridWebView
 
             var platformView = new MauiWKWebView(RectangleF.Empty, this, config);
 
-#if MACCATALYST13_3_OR_GREATER || IOS16_4_OR_GREATER
-            // Enable Developer Extras for Catalyst/iOS builds for 16.4+
-            platformView.SetValueForKey(NSObject.FromObject(enableWebDevTools), new NSString("inspectable"));
-#endif
+            if (OperatingSystem.IsMacCatalystVersionAtLeast(major: 13, minor: 3) ||
+                OperatingSystem.IsIOSVersionAtLeast(major: 16, minor: 4))
+            {
+                // Enable Developer Extras for Catalyst/iOS builds for 16.4+
+                platformView.SetValueForKey(NSObject.FromObject(enableWebDevTools), new NSString("inspectable"));
+            }
 
             return platformView;
         }
