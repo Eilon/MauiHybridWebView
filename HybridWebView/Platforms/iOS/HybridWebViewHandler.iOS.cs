@@ -15,7 +15,16 @@ namespace HybridWebView
             config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
             config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
+            // Legacy Developer Extras setting.
+            var enableWebDevTools = ((HybridWebView)VirtualView).EnableWebDevTools;
+            config.Preferences.SetValueForKey(NSObject.FromObject(enableWebDevTools), new NSString("developerExtrasEnabled"));
+
             var platformView = new MauiWKWebView(RectangleF.Empty, this, config);
+
+#if MACCATALYST13_3_OR_GREATER || IOS16_4_OR_GREATER
+            // Enable Developer Extras for Catalyst/iOS builds for 16.4+
+            platformView.SetValueForKey(NSObject.FromObject(enableWebDevTools), new NSString("inspectable"));
+#endif
 
             return platformView;
         }

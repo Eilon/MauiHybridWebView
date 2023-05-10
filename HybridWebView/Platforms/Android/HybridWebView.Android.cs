@@ -24,6 +24,10 @@ namespace HybridWebView
 
         private partial Task InitializeHybridWebView()
         {
+            // Note that this is a per-app setting and not per-control, so if you enable
+            // this, it is enabled for all Android WebViews in the app.
+            AWebView.SetWebContentsDebuggingEnabled(enabled: EnableWebDevTools);
+
             PlatformWebView.Settings.JavaScriptEnabled = true;
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);

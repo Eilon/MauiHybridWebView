@@ -11,6 +11,10 @@ public partial class MainPage : ContentPage
 
         BindingContext = this;
 
+#if DEBUG
+        myHybridWebView.EnableWebDevTools = true;
+#endif
+
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
     }
 

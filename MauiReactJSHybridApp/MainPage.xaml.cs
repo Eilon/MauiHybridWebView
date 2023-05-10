@@ -13,6 +13,10 @@ namespace MauiReactJSHybridApp
             _todoDataStore = new TodoDataStore();
             _todoDataStore.TaskDataChanged += OnTodoDataChanged;
 
+#if DEBUG
+            myHybridWebView.EnableWebDevTools = true;
+#endif
+
             myHybridWebView.JSInvokeTarget = new TodoJSInvokeTarget(this, _todoDataStore);
 
             BindingContext = this;
