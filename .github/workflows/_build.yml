@@ -24,6 +24,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set XCode Version
+        shell: bash
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_14.3.app"
+          echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
+        if: ${{ matrix.os == 'macos-latest' }}
+
       - name: Install .NET 7 SDK
         uses: actions/setup-dotnet@v3
         with:
