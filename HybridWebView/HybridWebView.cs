@@ -27,6 +27,11 @@ namespace HybridWebView
         /// </summary>
         public object? JSInvokeTarget { get; set; }
 
+        /// <summary>
+        /// Enables web developers tools (such as "F12 web dev tools inspectors")
+        /// </summary>
+        public bool EnableWebDevTools { get; set; }
+
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
         public void Navigate(string url)

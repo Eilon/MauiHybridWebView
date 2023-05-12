@@ -32,6 +32,7 @@ namespace HybridWebView
 
             await PlatformWebView.EnsureCoreWebView2Async();
 
+            PlatformWebView.CoreWebView2.Settings.AreDevToolsEnabled = EnableWebDevTools;
             PlatformWebView.CoreWebView2.Settings.IsWebMessageEnabled = true;
             PlatformWebView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
             PlatformWebView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
