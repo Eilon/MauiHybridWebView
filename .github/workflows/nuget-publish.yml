@@ -36,5 +36,5 @@ jobs:
 
       - name: "Publish NuGet packages to nuget.org"
         run: |
-          nuget push "artifacts\*.nupkg" --skip-duplicate -ApiKey $env:NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
-          nuget push "artifacts\*.snupkg" --skip-duplicate -ApiKey $env:NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
+          nuget push "artifacts\*.nupkg" -SkipDuplicate -ApiKey $env:NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
+          nuget push "artifacts\*.snupkg" -SkipDuplicate -ApiKey $env:NUGET_AUTH_TOKEN -Source https://api.nuget.org/v3/index.json
