@@ -16,6 +16,9 @@ public partial class MainPage : ContentPage
 #endif
 
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
+
+        // Register in the constructor or anywhere else
+        myHybridWebView.AddLocalCallback(this, nameof(AddLocalCallBackTest));
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
@@ -28,6 +31,11 @@ public partial class MainPage : ContentPage
     private async void OnSendRawMessageToJS(object sender, EventArgs e)
     {
         _ = await myHybridWebView.EvaluateJavaScriptAsync($"SendToJs('Sent from .NET, the time is: {DateTimeOffset.Now}!')");
+    }
+
+    private async void AddLocalCallBackTest(string message, int value)
+    {
+        WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}, using a local registration");
     }
 
     private async void OnInvokeJSMethod(object sender, EventArgs e)
@@ -80,5 +88,6 @@ public partial class MainPage : ContentPage
         MainPage = 0,
         RawMessages = 1,
         MethodInvoke = 2,
+        ManualRegister = 3,
     }
 }

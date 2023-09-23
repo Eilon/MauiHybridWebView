@@ -14,7 +14,7 @@
         function CallDotNetMethod() {
             Log('Calling a method in .NET with some parameters');
 
-            HybridWebView.SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
+            HybridWebView.SendInvokeMessageToDotNet("AddLocalCallBackTest", ["msg from js", 987]);
         }
     </script>
     <script src="_hwv/HybridWebView.js"></script>
@@ -24,7 +24,7 @@
 <body>
     <h1>HybridWebView demo: Method invoke</h1>
     <div class="navBar">
-        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | Method invoke | <a href="/localmethodinvoke.html">Local method invoke</a>
+        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | <a href="/methodinvoke.html">Method invoke</a> | Local method invoke
     </div>
     <div>
         Methods can be invoked in both directions:
@@ -45,7 +45,7 @@
     </div>
     <script>
         // Notify .NET code which page we're on
-        HybridWebView.SendRawMessageToDotNet("page:2");
+        HybridWebView.SendRawMessageToDotNet("page:3");
     </script>
 </body>
 </html>

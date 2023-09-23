@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 
 namespace HybridWebView
 {
@@ -120,13 +121,21 @@ namespace HybridWebView
                 throw new NotImplementedException($"The {nameof(JSInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
             }
 
-            var invokeMethod = JSInvokeTarget.GetType().GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
-            if (invokeMethod == null)
+            object containingClass = JSInvokeTarget;
+            MethodInfo invokeMethod = JSInvokeTarget.GetType().GetMethod(invokeData.MethodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
+                
+            if(invokeMethod is null)
             {
-                throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(JSInvokeTarget)} of type {JSInvokeTarget.GetType().FullName}.");
+                (object containingClass, MethodInfo method)? localMethod = LocalRegisteredCallbacks.Where(x => x.Key.Equals(invokeData.MethodName)).Select(x => x.Value).FirstOrDefault();
+
+                if(localMethod is not null)
+                {
+                    invokeMethod = localMethod.Value.method;
+                    containingClass = localMethod.Value.containingClass;
+                }
             }
 
-            if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
+            if (invokeData.ParamValues is not null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
             {
                 throw new InvalidOperationException($"The number of parameters on {nameof(JSInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
             }
@@ -136,7 +145,24 @@ namespace HybridWebView
                     .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
                     .ToArray();
 
-            var returnValue = invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
+            invokeMethod.Invoke(containingClass, paramObjectValues);
+        }
+
+
+        internal readonly Dictionary<string, (object containingClass, MethodInfo method)> LocalRegisteredCallbacks = new();
+        public void AddLocalCallback(object containingClass, string methodName)
+        {
+            MethodInfo action = containingClass.GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.InvokeMethod);
+
+            if (LocalRegisteredCallbacks.ContainsKey(action.Name))
+                LocalRegisteredCallbacks.Remove(action.Name);
+
+            LocalRegisteredCallbacks.Add(action.Name, (containingClass, action));
+        }
+        public void RemoveLocalCallback(string methodName)
+        {
+            if (LocalRegisteredCallbacks.ContainsKey(methodName))
+                LocalRegisteredCallbacks.Remove(methodName);
         }
 
         private sealed class JSInvokeMethodData
