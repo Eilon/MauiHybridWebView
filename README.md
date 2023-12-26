@@ -41,12 +41,12 @@ Or please log an issue in this repo for any other topics.
 
 ## Getting Started
 
-To get started, you'll need a .NET MAUI 7 project, then add the HybridWebView control, and add some web content to it.
+To get started, you'll need a .NET MAUI 8 project, then add the HybridWebView control, and add some web content to it.
 
 Note: If you'd like to check out an already completed sample, go to https://github.com/Eilon/SampleMauiHybridWebViewProject
 
 1. Ensure you have Visual Studio 2022 with the .NET MAUI workload installed
-1. Create a **.NET MAUI App** project that targets .NET 7 (or use an existing one)
+1. Create a **.NET MAUI App** project that targets .NET 8 (or use an existing one)
 1. Add a reference to the `EJL.MauiHybridWebView` package:
     1. Right-click on the **Dependencies** node in Solution Explorer and select **Manage NuGet Packages**
     1. Select the **Browse** tab
@@ -108,7 +108,7 @@ Note: If you'd like to check out an already completed sample, go to https://gith
 
 ## How to run the source code in this repo
 
-To run this app you need to have [Visual Studio for Windows or Mac, including the .NET MAUI workload](https://learn.microsoft.com/dotnet/maui/get-started/installation?view=net-maui-7.0). Then clone this repo, open the solution, and run one of the sample projects.
+To run this app you need to have [Visual Studio for Windows or Mac, including the .NET MAUI workload](https://learn.microsoft.com/dotnet/maui/get-started/installation?view=net-maui-8.0). Then clone this repo, open the solution, and run one of the sample projects.
 
 ## MauiReactJSHybridApp React JS app
 
