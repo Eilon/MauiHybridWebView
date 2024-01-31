@@ -38,7 +38,7 @@ jobs:
             8.0.100
 
       - name: Install MAUI Workload
-        run: dotnet workload install maui --from-rollback-file https://maui.blob.core.windows.net/metadata/rollbacks/7.0.1xx.json --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json --source https://api.nuget.org/v3/index.json
+        run: dotnet workload install maui --from-rollback-file https://maui.blob.core.windows.net/metadata/rollbacks/8.0.1xx.json --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json --source https://api.nuget.org/v3/index.json
 
       - name: "Restore NuGet packages"
         run: dotnet restore /p:Configuration=Release MauiCSharpInteropWebView.sln
