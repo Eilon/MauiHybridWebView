@@ -31,11 +31,11 @@ jobs:
           echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.1.app" >> $GITHUB_ENV
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - name: Install .NET 7 SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install .NET 8 SDK
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            7.0.100
+            8.0.100
 
       - name: Install MAUI Workload
         run: dotnet workload install maui --from-rollback-file https://maui.blob.core.windows.net/metadata/rollbacks/7.0.1xx.json --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json --source https://api.nuget.org/v3/index.json
