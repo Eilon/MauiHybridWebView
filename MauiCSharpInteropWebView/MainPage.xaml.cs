@@ -103,10 +103,10 @@ public partial class MainPage : ContentPage
                         //Create URL using the tileId parameter. 
                         var url = $"https://ecn.t0.tiles.virtualearth.net/tiles/a{quadKey.ToString()}.jpeg?g=14245";
 
-#if WINDOWS
-                        var client = new HttpClient();
-#elif ANDROID
+#if ANDROID
                         var client = new HttpClient(new Xamarin.Android.Net.AndroidMessageHandler());
+#else
+                        var client = new HttpClient();
 #endif
 
                         var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));

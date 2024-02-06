@@ -4,10 +4,21 @@ namespace HybridWebView
 {
     public class HybridWebViewRestEventArgs : EventArgs
     {
-        public HybridWebViewRestEventArgs(Dictionary<string, string>? queryParams)
+        public HybridWebViewRestEventArgs(string fullUrl)
         {
-            QueryParams = queryParams;
+            FullUrl = fullUrl;
+
+            if (fullUrl != null)
+            {
+                QueryParams = new Uri(fullUrl).Query
+                          .Substring(1)
+                          .Split('&')
+                          .Select(p => p.Split('='))
+                          .ToDictionary(p => p[0], p => p[1]);
+            }
         }
+
+        public string FullUrl { get; }
 
         public Dictionary<string, string>? QueryParams { get; }
 

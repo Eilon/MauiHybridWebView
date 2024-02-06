@@ -2,6 +2,7 @@
 using Microsoft.Maui.Platform;
 using System.Drawing;
 using System.Globalization;
+using System.Reflection.Metadata;
 using System.Runtime.Versioning;
 using WebKit;
 
@@ -91,6 +92,7 @@ namespace HybridWebView
 
             private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
             {
+                string fullUrl = url;
                 url = QueryStringHelper.RemovePossibleQueryString(url);
 
                 if (new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
@@ -118,7 +120,30 @@ namespace HybridWebView
                         };
                     }
 
-                    var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                    Stream? contentStream = null;
+
+                    if (fullUrl != null && fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?"))
+                    {
+                        var webView = _webViewHandler.VirtualView as HybridWebView;
+
+                        if (webView != null)
+                        {
+                            var e = new HybridWebViewRestEventArgs(fullUrl);
+                            webView.OnProxyRequestMessage(e).Wait();
+
+                            if (e.ResponseStream != null)
+                            {
+                                contentType = e.ContentType ?? "text/plain";
+                                contentStream = e.ResponseStream;
+                            }
+                        }
+                    }
+
+                    if (contentStream == null)
+                    {
+                        contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                    }
+
                     if (contentStream is not null)
                     {
                         statusCode = 200;

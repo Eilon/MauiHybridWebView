@@ -15,9 +15,9 @@ namespace HybridWebView
         }
         public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
         {
-            var requestUri = request?.Url?.ToString();
-            requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
-
+            string? fullUrl = request?.Url?.ToString();
+            string requestUri = QueryStringHelper.RemovePossibleQueryString(fullUrl);
+            
             if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
                 var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
@@ -40,23 +40,23 @@ namespace HybridWebView
                     };
                 }
 
-                var lowerUrl = request?.Url?.ToString()?.ToLowerInvariant();
-                var webView = _handler.VirtualView as HybridWebView;
                 Stream? contentStream = null;
 
-                if (lowerUrl != null && lowerUrl.StartsWith(HybridWebView.AppOrigin + "proxy?") && webView != null && webView.OnProxyRequestMessage != null)
+                if (fullUrl != null && fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?"))
                 {
-                    var queryParams = new Uri(lowerUrl).Query
-                            .Substring(1)
-                            .Split('&')
-                            .Select(p => p.Split('='))
-                            .ToDictionary(p => p[0], p => p[1]);
+                    var webView = _handler.VirtualView as HybridWebView;
 
-                    var e = new HybridWebViewRestEventArgs(queryParams);
-                    webView.OnProxyRequestMessage(e).Wait();
+                    if (webView != null)
+                    {
+                        var e = new HybridWebViewRestEventArgs(fullUrl);
+                        webView.OnProxyRequestMessage(e).Wait();
 
-                    contentType = e.ContentType ?? "text/plain";
-                    contentStream = e.ResponseStream;
+                        if (e.ResponseStream != null)
+                        {
+                            contentType = e.ContentType ?? "text/plain";
+                            contentStream = e.ResponseStream;
+                        }
+                    }
                 }
 
                 if(contentStream == null)
