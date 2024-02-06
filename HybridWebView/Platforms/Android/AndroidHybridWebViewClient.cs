@@ -40,7 +40,29 @@ namespace HybridWebView
                     };
                 }
 
-                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                var lowerUrl = request?.Url?.ToString()?.ToLowerInvariant();
+                var webView = _handler.VirtualView as HybridWebView;
+                Stream? contentStream = null;
+
+                if (lowerUrl != null && lowerUrl.StartsWith(HybridWebView.AppOrigin + "proxy?") && webView != null && webView.OnProxyRequestMessage != null)
+                {
+                    var queryParams = new Uri(lowerUrl).Query
+                            .Substring(1)
+                            .Split('&')
+                            .Select(p => p.Split('='))
+                            .ToDictionary(p => p[0], p => p[1]);
+
+                    var e = new HybridWebViewRestEventArgs(queryParams);
+                    webView.OnProxyRequestMessage(e).Wait();
+
+                    contentType = e.ContentType ?? "text/plain";
+                    contentStream = e.ResponseStream;
+                }
+
+                if(contentStream == null)
+                {
+                    contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                }
 
                 if (contentStream is null)
                 {

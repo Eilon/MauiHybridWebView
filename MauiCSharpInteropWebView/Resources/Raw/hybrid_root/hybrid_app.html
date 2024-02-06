@@ -20,9 +20,26 @@
     <div>
         Check out the navigation links above for some <em>cool</em> demos.
     </div>
+    <div>
+        <input type="button" value="Load image from Zip" onclick="loadFromZip('happy.jpeg')" />
+        <input type="button" value="Fail to load image from Zip" onclick="loadFromZip('notInZip.jpeg')" />
+        <input type="button" value="Proxy random image from web" onclick="loadFromWeb()" />
+        <br/>
+        <img id="proxyImage" />
+    </div>
     <script>
         // Notify .NET code which page we're on
         HybridWebView.SendRawMessageToDotNet("page:0");
+
+        function loadFromZip(fileName) {
+            document.getElementById('proxyImage').src = `https://0.0.0.0/proxy?operation=loadImageFromZip&fileName=${fileName}`;
+        }
+
+        function loadFromWeb() {
+            //Get a random integer between 1 and 10
+            var randomInt = Math.floor(Math.random() * 9) + 1;
+            document.getElementById('proxyImage').src = `https://0.0.0.0/proxy?operation=loadImageFromWeb&tileId=${randomInt}`;
+        }
     </script>
 </body>
 </html>

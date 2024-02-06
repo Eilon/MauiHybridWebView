@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.ComponentModel;
+using System.Text.Json;
 
 namespace HybridWebView
 {
@@ -33,6 +34,8 @@ namespace HybridWebView
         public bool EnableWebDevTools { get; set; }
 
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
+
+        public Func<HybridWebViewRestEventArgs, Task>? OnProxyRequest;
 
         public void Navigate(string url)
         {
@@ -111,6 +114,14 @@ namespace HybridWebView
                     throw new InvalidOperationException($"Unknown message type: {messageData?.MessageType}. Message contents: {messageData?.MessageContent}");
             }
 
+        }
+
+        public virtual async Task OnProxyRequestMessage(HybridWebViewRestEventArgs args)
+        {
+            if (OnProxyRequest != null)
+            {
+                await OnProxyRequest(args);
+            }
         }
 
         private void InvokeDotNetMethod(JSInvokeMethodData invokeData)
