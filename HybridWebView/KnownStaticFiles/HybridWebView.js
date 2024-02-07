@@ -1,10 +1,19 @@
 ﻿// Standard methods for HybridWebView
 
 window.HybridWebView = {
+    /**
+     * Sends a message to .NET using the built in
+     * @param {string} message Message to send.
+     */
     "SendRawMessageToDotNet": function SendRawMessageToDotNet(message) {
         window.HybridWebView.SendMessageToDotNet(0, message);
     },
-      
+
+    /**
+     * Invoke a .NET method. No result is expected.
+     * @param {string} methodName Name of .NET method to invoke.
+     * @param {any[]} paramValues Parameters to pass to the method.
+     */
     "SendInvokeMessageToDotNet": function SendInvokeMessageToDotNet(methodName, paramValues) {
         if (typeof paramValues !== 'undefined') {
             if (!Array.isArray(paramValues)) {
@@ -18,6 +27,13 @@ window.HybridWebView = {
         window.HybridWebView.SendMessageToDotNet(1, JSON.stringify({ "MethodName": methodName, "ParamValues": paramValues }));
     },
 
+    /**
+     * Asynchronously invoke .NET method and get a result. 
+     * Leverages the proxy to send the message to .NET.
+     * @param {string} methodName Name of .NET method to invoke.
+     * @param {any[]} paramValues Parameters to pass to the method.
+     * @returns {Promise<any>} Result of the .NET method.
+     */
     "SendInvokeMessageToDotNetAsync": async function SendInvokeMessageToDotNetAsync(methodName, paramValues) {
         const body = {
             MethodName: methodName
@@ -41,7 +57,7 @@ window.HybridWebView = {
 
         try {
             //Android web view doesn't support getting the body of a POST request, so we use a GET request instead and pass the body as a query string parameter.
-            var requestUrl = 'https://0.0.0.0/proxy?__ajax=' + encodeURIComponent(message);
+            var requestUrl = `${window.location.origin}/proxy?__ajax=${encodeURIComponent(message)}`;
 
             const rawResponse = await fetch(requestUrl, {
                 method: 'GET',
@@ -63,6 +79,12 @@ window.HybridWebView = {
         return null;
     },
 
+    /**
+     * Sends a message to .NET using the built in 
+     * @private
+     * @param {number} messageType The type of message to send.
+     * @param {string} messageContent The message content.
+     */
     "SendMessageToDotNet": function SendMessageToDotNet(messageType, messageContent) {
         var message = JSON.stringify({ "MessageType": messageType, "MessageContent": messageContent });
 

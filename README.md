@@ -13,7 +13,7 @@ Example usage of the control:
 
 And here's how .NET code can call a JavaScript method:
 
-```c#
+```csharp
 var sum = await myHybridWebView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);
 ```
 
@@ -23,7 +23,21 @@ And the reverse, JavaScript code calling a .NET method:
 HybridWebView.SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
 ```
 
+With JavaScript you can also asynchronously call a .NET method and get a result:
+
+```js
+HybridWebView.SendInvokeMessageToDotNetAsync("CallMeFromScriptAsync", ["msg from js", 987])
+	.then(result => console.log("Got result from .NET: " + result));
+```
+
+or 
+
+```js
+const result = await HybridWebView.SendInvokeMessageToDotNetAsync("CallMeFromScriptAsync", ["msg from js", 987]);
+```
+
 In addition to method invocation, sending "raw" messages is also supported.
+
 
 ## What's in this repo?
 
@@ -47,7 +61,7 @@ Note: If you'd like to check out an already completed sample, go to https://gith
 
 1. Ensure you have Visual Studio 2022 with the .NET MAUI workload installed
 1. Create a **.NET MAUI App** project that targets .NET 8 (or use an existing one)
-1. Add a reference to the `EJL.MauiHybridWebView` package:
+1. Add a reference to the `EJL.MauiHybridWebView` package ([NuGet package](https://www.nuget.org/packages/EJL.MauiHybridWebView/1.0.0-preview3)):
     1. Right-click on the **Dependencies** node in Solution Explorer and select **Manage NuGet Packages**
     1. Select the **Browse** tab
     1. Ensure the **Include prerelease** checkbox is checked
@@ -61,7 +75,7 @@ Note: If you'd like to check out an already completed sample, go to https://gith
     1. Add the markup `<ejl:HybridWebView HybridAssetRoot="hybrid_root" RawMessageReceived="OnHybridWebViewRawMessageReceived" />` inside the `<ContentPage>` tag
     1. Open the `MainPage.xaml.cs` file
     1. Delete the `count` field, and the `OnCounterClicked` method, and replace it with the following code:
-        ```c#
+        ```csharp
         private async void OnHybridWebViewRawMessageReceived(object sender, HybridWebView.HybridWebViewRawMessageReceivedEventArgs e)
         {
             await Dispatcher.DispatchAsync(async () =>
@@ -105,6 +119,61 @@ Note: If you'd like to check out an already completed sample, go to https://gith
     1. You can run it on Windows, Android, iOS, or macOS
     1. When you launch the app, type text into the textbox and click the button to receive the message in C# code
 
+## Proxy URLs
+
+The `HybridWebView` control can redirect URL requests to native code, and allow custom responses streams to be set. 
+This allows scenarios such as dynamically generating content, loading content from compressed files like ZIP or SQLite, or loading content from the internet that doesn't support CORs.
+
+To use this feature, set the `OnProxyRequest` event in the `HybridWebView` control. 
+When the event handler is called set the `ResponseStream` and optionally the `ResponseContentType` aof the `HybridWebViewProxyEventArgs` object received in the `OnProxyRequest` method.
+
+The `HybridWebViewProxyEventArgs` has the following properties:
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `QueryParams` | `IDictionary<string, string>` | The query string parameters of the request. Note that all values will be strings. |
+| `ResponseContentType` | `string` | The content type of the response body. Default: `"text/plain"` |
+| `ResponseStream` | `Stream` | The stream to use as the response body. |
+| `Url` | `string` | The full URL that was requested. |
+
+```csharp
+myWebView.OnProxyRequest += async (args) =>
+{
+    //Use the query string parameters to determine what to do.
+    if (args.QueryParams.TryGetValue("myParameter", out var myParameter))
+	{
+        //Add your logic to determine what to do. 
+		if (myParameter == "myValue")
+		{
+            //Add logic to get your content (e.g. from a database, or generate it).
+            //Can be anything that can be turned into a stream.
+
+            //Set the response stream and optionally the content type.
+			args.ResponseStream = new MemoryStream(Encoding.UTF8.GetBytes("This is the file content"));
+			args.ResponseContentType = "text/plain";
+		}
+	}
+};
+```
+
+In your web app, you can make requests to the proxy URL by either using relative paths like `/proxy?myParameter=myValue` or an absolute path by appending the relative path tot he pages origin location `window.location.origin + '/proxy?myParameter=myValue'`.
+Be sure to encode the query string parameters to ensure they are properly handled. Here are some ways to implement proxy url's in your web app:
+
+1. Use proxy URL's with HTML tags. 
+   ```html
+   <img src="/proxy?myParameter=myValue" />
+   ```
+2. Use proxy URL's in JavaScript. 
+   ```js
+   var request = window.location.origin + '/proxy?myParameter=' + encodeURIComponent('myValue');
+
+   fetch(request)
+	   .then(response => response.text())
+	   .then(data => console.log(data));
+   ```
+  3. Use proxy URL's with other JavaScript libraries. Some libraries only allow you to pass in string URL's. If you want to create the response in C# (e.g. generate content, or load from a compressed file), you can use a proxy URL to allow you to fullfil the response in C#. 
+ 
+**NOTE:** Data from the webview can only be set in the proxy query string. POST body data is not supported as the native `WebView` in platforms do not support it.
 
 ## How to run the source code in this repo
 

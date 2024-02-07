@@ -14,6 +14,12 @@
                 : url.Substring(0, indexOfQueryString);
         }
 
+        /// <summary>
+        /// A simple utility that takes a URL, extracts the query string and returns a dictionary of key-value pairs.
+        /// Note that values are unescaped. Maually created URLs in JavaScript should use encodeURIComponent to escape values.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public static Dictionary<string, string> GetKeyValuePairs(string? url)
         {
             var result = new Dictionary<string, string>();

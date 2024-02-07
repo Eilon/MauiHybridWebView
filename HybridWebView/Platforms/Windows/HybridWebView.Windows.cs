@@ -74,15 +74,18 @@ namespace HybridWebView
 
                 Stream? contentStream = null;
 
-                if (fullUrl != null && fullUrl.ToLowerInvariant().StartsWith(AppOrigin + "proxy?"))
+                //Check to see if the request is a proxy request.
+                if (!string.IsNullOrEmpty(fullUrl) &&
+                    fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?"))
                 {
-                    var e = new HybridWebViewProxyEventArgs(fullUrl);
-                    await OnProxyRequestMessage(e);
+                    //Create an event args object to pass to the event.
+                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+                    await OnProxyRequestMessage(args);
 
-                    if (e.ResponseStream != null)
+                    if (args.ResponseStream != null)
                     {
-                        contentType = e.ResponseContentType ?? "text/plain";
-                        contentStream = e.ResponseStream;
+                        contentType = args.ResponseContentType ?? "text/plain";
+                        contentStream = args.ResponseStream;
                     }
                 }
 

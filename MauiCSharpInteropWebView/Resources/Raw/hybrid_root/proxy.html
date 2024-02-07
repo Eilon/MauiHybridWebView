@@ -10,82 +10,19 @@
 
     <script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
-</head>
-<body>
-    <h1>HybridWebView demo: Proxy</h1>
-    <div class="navBar">
-        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | <a href="/methodinvoke.html">Method invoke</a> | Proxy
-    </div>
-    <div>
-        Requests can be proxied through .NET to allow direct access to native APIs, and allow custom response streams to be returned.
-        Request URLs can be created with the format of "https://0.0.0.0/proxy?" followed by custom query string parameters.
-    </div>
-    <div>
-        <b>Round trip .NET invoke</b>
-        <p>
-            This button will invoke a .NET method and return the result to the JavaScript code. This is useful for offloading work to .NET and returning the result to the JavaScript code..
-        </p>
-        <input type="button" value="Invoke round trip .NET method" onclick="invokeRoundTripDotNetMethod()" />
-        <input type="button" value="Invoke .NET Fibonacci method" onclick="invokeDotNetFibonacciMethod()" />
-        <input type="button" value="Invoke .NET and get JSON result" onclick="invokeDotNetMethodJsonResult()" />
-        <input type="button" value="Invoke .NET with input and get JSON result" onclick="invokeDotNetMethodJsonResultWithInput()" />
-        <br /><br />
-        <textarea id="messageLog" style="width: 90%; height: 10em;"></textarea>
-    </div>
-    <div>
-        <b>Create proxy URLs and pass into native HTML elements</b>
-        <p>
-            The following buttons will create a proxy URL and pass it into an image element. The image request will will be handled by a custom .NET method.
-        </p>
-        <input type="button" value="Load image from Zip" onclick="loadFromZip('happy.jpeg')" />
-        <input type="button" value="Fail to load image from Zip" onclick="loadFromZip('notInZip.jpeg')" />
-        <input type="button" value="Proxy random image from web" onclick="loadFromWeb()" />
-        <br /><br />
-        <img id="proxyImage" />
-    </div>
-    <div>
-        <b>
-            Interactive map with offline tiles.
-        </b>
-        <p>
-            The map tiles are locally stored in a MBTiles file (a SQLite database file with a specific table schema and .mbtiles extension). 
-            The MBTile file used in this example contains 4,096 map tiles. storing this as an MBTiles/SQLite file makes it significantly easier to manage and distribute.
-            The map is displayed using <a href="https://github.com/maplibre/maplibre-gl-js" target="_blank">MapLibre GL JS</a>.
-        </p>
-        <div id="myMap" style='width: 100%; height: 600px;'></div>
-    </div>
+
     <script>
-        // Notify .NET code which page we're on
-        HybridWebView.SendRawMessageToDotNet("page:3");
-
-        async function invokeRoundTripDotNetMethod() {
-            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('RoundTripCallFromScript', ["param1", 123]);
-            Log(r);
-        }
-
-        async function invokeDotNetFibonacciMethod() {
-            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('Fibonacci', [Math.round(Math.random() * 30) + 1]);
-            Log('Fibonacci result from C#: ' + r);
-        }
-
-        async function invokeDotNetMethodJsonResult() {
-            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('GetObjectResponse');
-            Log(JSON.stringify(r));
-        }
-
-        async function invokeDotNetMethodJsonResultWithInput() {
-            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('GetObjectResponseWithInput', [Math.random() * 100]);
-            Log('Result from C#: ' + JSON.stringify(r));
-        }
-
         function loadFromZip(fileName) {
-            document.getElementById('proxyImage').src = `https://0.0.0.0/proxy?operation=loadImageFromZip&fileName=${fileName}`;
+            //Send query parameters `operation=loadImageFromZip` and `fileName` to .NET to handle the request.
+            document.getElementById('proxyImage').src = `${window.location.origin}/proxy?operation=loadImageFromZip&fileName=${fileName}`;
         }
 
         function loadFromWeb() {
             //Get a random integer between 1 and 10
             var randomInt = Math.floor(Math.random() * 9) + 1;
-            document.getElementById('proxyImage').src = `https://0.0.0.0/proxy?operation=loadImageFromWeb&tileId=${randomInt}`;
+
+            //Send query parameters `operation=loadImageFromWeb` and `tileId` to .NET to handle the request.
+            document.getElementById('proxyImage').src = `${window.location.origin}/proxy?operation=loadImageFromWeb&tileId=${randomInt}`;
         }
 
         //Load the map.
@@ -98,8 +35,8 @@
                         'raster-tiles': {
                             'type': 'raster',
                             'tiles': [
-                                //URL to proxy to retrieve map tiles from SQLite database.
-                                'https://0.0.0.0/proxy?operation=loadMapTile&x={x}&y={y}&z={z}'
+                                //Proxy URL to retrieve map tiles from SQLite database.
+                                window.location.origin + '/proxy?operation=loadMapTile&x={x}&y={y}&z={z}'
                             ],
                             'tileSize': 256,
                             'minzoom': 0,
@@ -116,6 +53,50 @@
                 }
             });
         }
+    </script>
+</head>
+<body>
+    <h1>HybridWebView demo: Proxy</h1>
+    <div class="navBar">
+        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | <a href="/methodinvoke.html">Method invoke</a> | Proxy URLs
+    </div>
+    <div>
+        Requests can be proxied through .NET to allow direct access to native APIs, and allow custom response streams to be returned. 
+        This is useful in scenarios where the request is being made from HTML elements, like an <code>img</code> tag, or a external library that only takes in string URLs.
+        Proxy request URLs can be created with the format <code>/proxy?</code> and appending a custom query string. Some JavaScript libraries may require the full URL to be passed in. 
+        This can be done by calling <code>`${window.location.origin}/proxy?`</code> and appending the custom query string.
+        Proxy URLs will look something like this: <code>https://0.0.0.0/proxy?myParameter=myValue</code> or <code>app://0.0.0.0/proxy?myParameter=myValue</code> depending on the platform.
+    </div>
+    <div>
+        <b>Create proxy URLs and pass into native HTML elements</b>
+        <p>
+            The following buttons will create a proxy URL and pass it into an <code>img</code> tag. The image request will will be handled by a custom .NET method.
+        </p>
+        <input type="button" value="Load image from Zip" onclick="loadFromZip('happy.jpeg')" />
+        <input type="button" value="Fail to load image from Zip" onclick="loadFromZip('notInZip.jpeg')" />
+        <input type="button" value="Proxy random image from web" onclick="loadFromWeb()" />
+        <br /><br />
+        <img id="proxyImage" />
+        <p>
+            The image below uses an <code>img</code> tag with a proxy URL in it's HTML like <code>&lt;img src="/proxy?operation=loadImageFromZip&fileName=happy.jpeg" /&gt;</code>
+            <br/>
+            <img src="/proxy?operation=loadImageFromZip&fileName=happy.jpeg" />
+        </p>
+    </div>
+    <div>
+        <b>
+            Interactive map with offline tiles.
+        </b>
+        <p>
+            The map tiles for this example are locally stored in a MBTiles file (a SQLite database file with a specific table schema and .mbtiles extension). 
+            The MBTile file used in this example contains 4,096 map tiles. storing this as an MBTiles/SQLite file makes it significantly easier to manage and distribute.
+            The map is displayed using <a href="https://github.com/maplibre/maplibre-gl-js" target="_blank">MapLibre GL JS</a>.
+        </p>
+        <div id="myMap" style='width: 100%; height: 600px;'></div>
+    </div>
+    <script>
+        // Notify .NET code which page we're on
+        HybridWebView.SendRawMessageToDotNet("page:3");
     </script>
 </body>
 </html>

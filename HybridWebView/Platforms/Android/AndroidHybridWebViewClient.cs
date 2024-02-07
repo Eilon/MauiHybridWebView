@@ -1,4 +1,5 @@
 ﻿using Android.Webkit;
+using Java.Time;
 using Microsoft.Maui.Platform;
 using System.Text;
 using AWebView = Android.Webkit.WebView;
@@ -42,19 +43,23 @@ namespace HybridWebView
 
                 Stream? contentStream = null;
 
-                if (fullUrl != null && fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?"))
+                // Check to see if the request is a proxy request.
+                if (!string.IsNullOrEmpty(fullUrl) &&
+                    fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?") &&
+                    _handler.VirtualView is HybridWebView)
                 {
                     var webView = _handler.VirtualView as HybridWebView;
 
                     if (webView != null)
                     {
-                        var e = new HybridWebViewProxyEventArgs(fullUrl);
-                        webView.OnProxyRequestMessage(e).Wait();
+                        //Create an event args object to pass to the event.
+                        var args = new HybridWebViewProxyEventArgs(fullUrl);
+                        webView.OnProxyRequestMessage(args).Wait();
 
-                        if (e.ResponseStream != null)
+                        if (args.ResponseStream != null)
                         {
-                            contentType = e.ResponseContentType ?? "text/plain";
-                            contentStream = e.ResponseStream;
+                            contentType = args.ResponseContentType ?? "text/plain";
+                            contentStream = args.ResponseStream;
                         }
                     }
                 }

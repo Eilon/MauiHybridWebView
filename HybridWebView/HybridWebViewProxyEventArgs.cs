@@ -11,19 +11,19 @@
         /// <param name="fullUrl">The full request URL.</param>
         public HybridWebViewProxyEventArgs(string fullUrl)
         {
-            RequestUrl = fullUrl;
+            Url = fullUrl;
             QueryParams = QueryStringHelper.GetKeyValuePairs(fullUrl);
         }
 
         /// <summary>
         /// The full request URL.
         /// </summary>
-        public string RequestUrl { get; }
+        public string Url { get; }
 
         /// <summary>
         /// Query string values extracted from the request URL.
         /// </summary>
-        public Dictionary<string, string> QueryParams { get; }
+        public IDictionary<string, string> QueryParams { get; }
 
         /// <summary>
         /// The response content type.

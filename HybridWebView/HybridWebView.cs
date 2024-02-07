@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿using System.Diagnostics;
+using System.Text.Json;
 
 namespace HybridWebView
 {
@@ -121,55 +121,63 @@ namespace HybridWebView
         }
 
         /// <summary>
-        /// Handle the proxy request message
+        /// Handle the proxy request message.
         /// </summary>
         /// <param name="args"></param>
-        /// <returns></returns>
+        /// <returns>A Task</returns>
         public virtual async Task OnProxyRequestMessage(HybridWebViewProxyEventArgs args)
         {
-            //When no query parameters are passed, the SendRoundTripMessageToDotNet javascript method is expected to have been called.
-            if (args.QueryParams != null && args.QueryParams.ContainsKey("__ajax"))
+            //Don't let failed proxy requests crash the app.
+            try
             {
-                var jsonQueryString = args.QueryParams["__ajax"];
-
-                if (jsonQueryString != null)
+                //When no query parameters are passed, the SendRoundTripMessageToDotNet javascript method is expected to have been called.
+                if (args.QueryParams != null && args.QueryParams.ContainsKey("__ajax"))
                 {
-                    var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(jsonQueryString);
+                    var jsonQueryString = args.QueryParams["__ajax"];
 
-                    if (invokeData != null && invokeData.MethodName != null)
+                    if (jsonQueryString != null)
                     {
-                        object? result = InvokeDotNetMethod(invokeData);
+                        var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(jsonQueryString);
 
-                        if (result != null)
+                        if (invokeData != null && invokeData.MethodName != null)
                         {
-                            args.ResponseContentType = "application/json";
+                            object? result = InvokeDotNetMethod(invokeData);
 
-                            DotNetInvokeResult dotNetInvokeResult;
+                            if (result != null)
+                            {
+                                args.ResponseContentType = "application/json";
 
-                            var resultType = result.GetType();
-                            if (resultType.IsArray || resultType.IsClass)
-                            {
-                                dotNetInvokeResult = new DotNetInvokeResult()
+                                DotNetInvokeResult dotNetInvokeResult;
+
+                                var resultType = result.GetType();
+                                if (resultType.IsArray || resultType.IsClass)
                                 {
-                                    Result = JsonSerializer.Serialize(result),
-                                    IsJson = true
-                                };
-                            }
-                            else
-                            {
-                                dotNetInvokeResult = new DotNetInvokeResult()
+                                    dotNetInvokeResult = new DotNetInvokeResult()
+                                    {
+                                        Result = JsonSerializer.Serialize(result),
+                                        IsJson = true
+                                    };
+                                }
+                                else
                                 {
-                                    Result = result
-                                };
+                                    dotNetInvokeResult = new DotNetInvokeResult()
+                                    {
+                                        Result = result
+                                    };
+                                }
+                                args.ResponseStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
                             }
-                            args.ResponseStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
                         }
                     }
                 }
+                else if (OnProxyRequest != null) //Check to see if user has subscribed to the event.
+                {
+                    await OnProxyRequest(args);
+                }
             }
-            else if (OnProxyRequest != null) //Check to see if user has subscribed to the event.
+            catch (Exception ex)
             {
-                await OnProxyRequest(args);
+                Debug.WriteLine($"An exception occurred while handling the proxy request: {ex.Message}");
             }
         }
 
@@ -211,6 +219,9 @@ namespace HybridWebView
             public string? MessageContent { get; set; }
         }
 
+        /// <summary>
+        /// A simple internal class to hold the result of a .NET method invocation, and whether it should be treated as JSON.
+        /// </summary>
         private sealed class DotNetInvokeResult
         {
             public object? Result { get; set; }

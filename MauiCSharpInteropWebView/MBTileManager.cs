@@ -10,12 +10,15 @@ namespace MauiCSharpInteropWebView
     public class MBTileManager
     {
         private SQLiteConnection conn = null;
-        private string assetPath = null;
 
+        /// <summary>
+        /// Creates an SQLite connection to an MBTiles file and retrieves tiles from it.
+        /// An MBTiles file is a SQLite database that contains map tiles and has a standard table format.
+        /// https://wiki.openstreetmap.org/wiki/MBTiles
+        /// <paramref name="assetPath"/> The path to the MBTiles file in the app's assets folder.</param>
+        /// </summary>
         public MBTileManager(string assetPath)
         {
-            this.assetPath = assetPath;
-
             //Copy asset to app data storage.
             var localPath = Path.Combine(FileSystem.AppDataDirectory, Path.GetFileName(assetPath));
 
@@ -42,6 +45,13 @@ namespace MauiCSharpInteropWebView
             }
         }
 
+        /// <summary>
+        /// Retrieves a tile from the MBTiles file.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
         public byte[] GetTile(long? x, long? y, long? z)
         {
             if(conn != null && x != null && y != null && z != null)
@@ -60,8 +70,14 @@ namespace MauiCSharpInteropWebView
             return null;
         }
 
+        /// <summary>
+        /// Represents a tile in an MBTiles file.
+        /// </summary>
         public class TileResult
         {
+            /// <summary>
+            /// Binary tile data. Could be a raster (jpeg/png image) or vector tile (pbf).
+            /// </summary>
             public byte[] tile_data { get; set; }
 
             public long tile_row { get; set; }
