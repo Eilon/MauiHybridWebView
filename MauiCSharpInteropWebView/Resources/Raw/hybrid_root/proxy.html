@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="_hwv/HybridWebView.js"></script>
+    <link href="styles/my-styles.css" rel="stylesheet" />
+    <script src="js/extra_code.js"></script>
+
+    <script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+</head>
+<body>
+    <h1>HybridWebView demo: Proxy</h1>
+    <div class="navBar">
+        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | <a href="/methodinvoke.html">Method invoke</a> | Proxy
+    </div>
+    <div>
+        Requests can be proxied through .NET to allow direct access to native APIs, and allow custom response streams to be returned.
+        Request URLs can be created with the format of "https://0.0.0.0/proxy?" followed by custom query string parameters.
+    </div>
+    <div>
+        <b>Round trip .NET invoke</b>
+        <p>
+            This button will invoke a .NET method and return the result to the JavaScript code. This is useful for offloading work to .NET and returning the result to the JavaScript code..
+        </p>
+        <input type="button" value="Invoke round trip .NET method" onclick="invokeRoundTripDotNetMethod()" />
+        <input type="button" value="Invoke .NET Fibonacci method" onclick="invokeDotNetFibonacciMethod()" />
+        <input type="button" value="Invoke .NET and get JSON result" onclick="invokeDotNetMethodJsonResult()" />
+        <input type="button" value="Invoke .NET with input and get JSON result" onclick="invokeDotNetMethodJsonResultWithInput()" />
+        <br /><br />
+        <textarea id="messageLog" style="width: 90%; height: 10em;"></textarea>
+    </div>
+    <div>
+        <b>Create proxy URLs and pass into native HTML elements</b>
+        <p>
+            The following buttons will create a proxy URL and pass it into an image element. The image request will will be handled by a custom .NET method.
+        </p>
+        <input type="button" value="Load image from Zip" onclick="loadFromZip('happy.jpeg')" />
+        <input type="button" value="Fail to load image from Zip" onclick="loadFromZip('notInZip.jpeg')" />
+        <input type="button" value="Proxy random image from web" onclick="loadFromWeb()" />
+        <br /><br />
+        <img id="proxyImage" />
+    </div>
+    <div>
+        <b>
+            Interactive map with offline tiles.
+        </b>
+        <p>
+            The map tiles are locally stored in a MBTiles file (a SQLite database file with a specific table schema and .mbtiles extension). 
+            The MBTile file used in this example contains 4,096 map tiles. storing this as an MBTiles/SQLite file makes it significantly easier to manage and distribute.
+            The map is displayed using <a href="https://github.com/maplibre/maplibre-gl-js" target="_blank">MapLibre GL JS</a>.
+        </p>
+        <div id="myMap" style='width: 100%; height: 600px;'></div>
+    </div>
+    <script>
+        // Notify .NET code which page we're on
+        HybridWebView.SendRawMessageToDotNet("page:3");
+
+        async function invokeRoundTripDotNetMethod() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('RoundTripCallFromScript', ["param1", 123]);
+            Log(r);
+        }
+
+        async function invokeDotNetFibonacciMethod() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('Fibonacci', [Math.round(Math.random() * 30) + 1]);
+            Log('Fibonacci result from C#: ' + r);
+        }
+
+        async function invokeDotNetMethodJsonResult() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('GetObjectResponse');
+            Log(JSON.stringify(r));
+        }
+
+        async function invokeDotNetMethodJsonResultWithInput() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('GetObjectResponseWithInput', [Math.random() * 100]);
+            Log('Result from C#: ' + JSON.stringify(r));
+        }
+
+        function loadFromZip(fileName) {
+            document.getElementById('proxyImage').src = `https://0.0.0.0/proxy?operation=loadImageFromZip&fileName=${fileName}`;
+        }
+
+        function loadFromWeb() {
+            //Get a random integer between 1 and 10
+            var randomInt = Math.floor(Math.random() * 9) + 1;
+            document.getElementById('proxyImage').src = `https://0.0.0.0/proxy?operation=loadImageFromWeb&tileId=${randomInt}`;
+        }
+
+        //Load the map.
+        window.onload = function () {
+            var map = new maplibregl.Map({
+                container: 'myMap',
+                style: {
+                    'version': 8,
+                    'sources': {
+                        'raster-tiles': {
+                            'type': 'raster',
+                            'tiles': [
+                                //URL to proxy to retrieve map tiles from SQLite database.
+                                'https://0.0.0.0/proxy?operation=loadMapTile&x={x}&y={y}&z={z}'
+                            ],
+                            'tileSize': 256,
+                            'minzoom': 0,
+                            'maxzoom': 6
+                        }
+                    },
+                    'layers': [
+                        {
+                            'id': 'simple-offline-tiles',
+                            'type': 'raster',
+                            'source': 'raster-tiles'
+                        }
+                    ]
+                }
+            });
+        }
+    </script>
+</body>
+</html>

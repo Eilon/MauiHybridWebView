@@ -127,12 +127,12 @@ namespace HybridWebView
 
                         if (webView != null)
                         {
-                            var e = new HybridWebViewRestEventArgs(fullUrl);
+                            var e = new HybridWebViewProxyEventArgs(fullUrl);
                             webView.OnProxyRequestMessage(e).Wait();
 
                             if (e.ResponseStream != null)
                             {
-                                contentType = e.ContentType ?? "text/plain";
+                                contentType = e.ResponseContentType ?? "text/plain";
                                 contentStream = e.ResponseStream;
                             }
                         }

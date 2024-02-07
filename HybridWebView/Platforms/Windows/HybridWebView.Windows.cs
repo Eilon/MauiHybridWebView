@@ -1,5 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using Windows.Storage.Streams;
 
 namespace HybridWebView
@@ -45,7 +46,7 @@ namespace HybridWebView
         {
             // Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
             using var deferral = eventArgs.GetDeferral();
-            
+
             string? fullUrl = eventArgs.Request.Uri;
             var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
@@ -75,12 +76,12 @@ namespace HybridWebView
 
                 if (fullUrl != null && fullUrl.ToLowerInvariant().StartsWith(AppOrigin + "proxy?"))
                 {
-                    var e = new HybridWebViewRestEventArgs(fullUrl);
+                    var e = new HybridWebViewProxyEventArgs(fullUrl);
                     await OnProxyRequestMessage(e);
 
                     if (e.ResponseStream != null)
                     {
-                        contentType = e.ContentType ?? "text/plain";
+                        contentType = e.ResponseContentType ?? "text/plain";
                         contentStream = e.ResponseStream;
                     }
                 }

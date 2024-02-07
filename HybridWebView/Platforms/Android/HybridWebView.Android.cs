@@ -32,7 +32,7 @@ namespace HybridWebView
 
             _javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
             PlatformWebView.AddJavascriptInterface(_javaScriptInterface, "hybridWebViewHost");
-
+            
             return Task.CompletedTask;
         }
 

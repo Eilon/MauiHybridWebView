@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.Text.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace HybridWebView
 {
@@ -35,7 +35,11 @@ namespace HybridWebView
 
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
-        public Func<HybridWebViewRestEventArgs, Task>? OnProxyRequest;
+        /// <summary>
+        /// Async Event handler that is called when a proxy request is made from the webview.
+        /// </summary>
+
+        public event Func<HybridWebViewProxyEventArgs, Task>? OnProxyRequest;
 
         public void Navigate(string url)
         {
@@ -116,15 +120,60 @@ namespace HybridWebView
 
         }
 
-        public virtual async Task OnProxyRequestMessage(HybridWebViewRestEventArgs args)
+        /// <summary>
+        /// Handle the proxy request message
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public virtual async Task OnProxyRequestMessage(HybridWebViewProxyEventArgs args)
         {
-            if (OnProxyRequest != null)
+            //When no query parameters are passed, the SendRoundTripMessageToDotNet javascript method is expected to have been called.
+            if (args.QueryParams != null && args.QueryParams.ContainsKey("__ajax"))
+            {
+                var jsonQueryString = args.QueryParams["__ajax"];
+
+                if (jsonQueryString != null)
+                {
+                    var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(jsonQueryString);
+
+                    if (invokeData != null && invokeData.MethodName != null)
+                    {
+                        object? result = InvokeDotNetMethod(invokeData);
+
+                        if (result != null)
+                        {
+                            args.ResponseContentType = "application/json";
+
+                            DotNetInvokeResult dotNetInvokeResult;
+
+                            var resultType = result.GetType();
+                            if (resultType.IsArray || resultType.IsClass)
+                            {
+                                dotNetInvokeResult = new DotNetInvokeResult()
+                                {
+                                    Result = JsonSerializer.Serialize(result),
+                                    IsJson = true
+                                };
+                            }
+                            else
+                            {
+                                dotNetInvokeResult = new DotNetInvokeResult()
+                                {
+                                    Result = result
+                                };
+                            }
+                            args.ResponseStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
+                        }
+                    }
+                }
+            }
+            else if (OnProxyRequest != null) //Check to see if user has subscribed to the event.
             {
                 await OnProxyRequest(args);
             }
         }
 
-        private void InvokeDotNetMethod(JSInvokeMethodData invokeData)
+        private object? InvokeDotNetMethod(JSInvokeMethodData invokeData)
         {
             if (JSInvokeTarget is null)
             {
@@ -147,7 +196,7 @@ namespace HybridWebView
                     .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
                     .ToArray();
 
-            var returnValue = invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
+            return invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
         }
 
         private sealed class JSInvokeMethodData
@@ -160,6 +209,12 @@ namespace HybridWebView
         {
             public int MessageType { get; set; }
             public string? MessageContent { get; set; }
+        }
+
+        private sealed class DotNetInvokeResult
+        {
+            public object? Result { get; set; }
+            public bool IsJson { get; set; } = false;
         }
 
         internal static async Task<string?> GetAssetContentAsync(string assetPath)
