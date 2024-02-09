@@ -30,6 +30,7 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 
 		<MtouchLink>None</MtouchLink>
+		<PublishTrimmed>false</PublishTrimmed>
 	</PropertyGroup>
 
 	<ItemGroup>
