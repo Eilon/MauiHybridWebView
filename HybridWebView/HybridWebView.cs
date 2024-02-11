@@ -88,6 +88,10 @@ namespace HybridWebView
         {
             var stringResult = await InvokeJsMethodAsync(methodName, paramValues);
 
+            if (stringResult is null)
+            {
+                return default;
+            }
             return JsonSerializer.Deserialize<TReturnType>(stringResult);
         }
 
