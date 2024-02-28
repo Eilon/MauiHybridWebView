@@ -20,53 +20,72 @@ namespace HybridWebView
 
             if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
-                var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+                try
+                {
+                    var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
-                string contentType;
-                if (string.IsNullOrEmpty(relativePath))
-                {
-                    relativePath = ((HybridWebView)_handler.VirtualView).MainFile;
-                    contentType = "text/html";
-                }
-                else
-                {
-                    var requestExtension = Path.GetExtension(relativePath);
-                    contentType = requestExtension switch
+                    if (relativePath?.Contains("throw-error") == true)
                     {
-                        ".htm" or ".html" => "text/html",
-                        ".js" => "application/javascript",
-                        ".css" => "text/css",
-                        _ => "text/plain",
-                    };
+                        throw new InvalidOperationException("Test exceptio thrown");
+                    }
+
+                    string contentType;
+                    if (string.IsNullOrEmpty(relativePath))
+                    {
+                        relativePath = ((HybridWebView)_handler.VirtualView).MainFile;
+                        contentType = "text/html";
+                    }
+                    else
+                    {
+                        var requestExtension = Path.GetExtension(relativePath);
+                        contentType = requestExtension switch
+                        {
+                            ".htm" or ".html" => "text/html",
+                            ".js" => "application/javascript",
+                            ".css" => "text/css",
+                            _ => "text/plain",
+                        };
+                    }
+
+                    var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+
+                    if (contentStream is null)
+                    {
+                        var assetPath = Path.Combine(((HybridWebView)_handler.VirtualView).HybridAssetRoot!, relativePath!);
+                        contentStream = PlatformOpenAppPackageFile(assetPath);
+                    }
+
+                    if (contentStream is null)
+                    {
+                        var notFoundContent = "Resource not found (404)";
+
+                        var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
+                        var notFoundContentStream = new MemoryStream(notFoundByteArray);
+
+                        return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
+                    }
+                    else
+                    {
+                        // TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
+                        return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType), contentStream);
+                    }
                 }
-
-                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
-
-                if (contentStream is null)
+                catch (Exception ex)
                 {
-                    var assetPath = Path.Combine(((HybridWebView)_handler.VirtualView).HybridAssetRoot!, relativePath!);
-                    contentStream = PlatformOpenAppPackageFile(assetPath);
-                }
+                    var errorContent = "Exception: " + ex.ToString(); ;
 
-                if (contentStream is null)
-                {
-                    var notFoundContent = "Resource not found (404)";
+                    var errorContentByteArray = Encoding.UTF8.GetBytes(errorContent);
+                    var errorContentStream = new MemoryStream(errorContentByteArray);
 
-                    var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
-                    var notFoundContentStream = new MemoryStream(notFoundByteArray);
-
-                    return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
-                }
-                else
-                {
-                    // TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
-                    return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType), contentStream);
+                    return new WebResourceResponse("text/plain", "UTF-8", 500, "Internal Server Error - Webview Exception", GetHeaders("text/plain"), errorContentStream);
                 }
             }
             else
             {
                 return base.ShouldInterceptRequest(view, request);
             }
+
+
         }
 
         private Stream? PlatformOpenAppPackageFile(string filename)
