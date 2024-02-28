@@ -33,7 +33,7 @@
 	<PropertyGroup>
 		<!-- Change these two values to control the version -->
 		<VersionMain>1.0.0</VersionMain>
-		<VersionPrelease>-preview4</VersionPrelease>
+		<VersionPrelease>-preview5</VersionPrelease>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -49,7 +49,7 @@
 		<RepositoryUrl>https://github.com/Eilon/MauiCSharpInteropWebView.git</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/Eilon/MauiCSharpInteropWebView</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-		<Copyright>© 2023 Eilon Lipton</Copyright>
+		<Copyright>© 2024 Eilon Lipton</Copyright>
 		<PackageVersion>$(VersionMain)$(VersionPrelease)</PackageVersion>
 		<PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts</PackageOutputPath>
 		<LicenseFile>$(MSBuildThisFileDirectory)..\LICENSE</LicenseFile>
