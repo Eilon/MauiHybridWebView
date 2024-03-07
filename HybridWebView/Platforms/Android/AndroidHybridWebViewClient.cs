@@ -16,9 +16,11 @@ namespace HybridWebView
         }
         public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
         {
-            string? fullUrl = request?.Url?.ToString();
-            string requestUri = QueryStringHelper.RemovePossibleQueryString(fullUrl);
-            
+            var fullUrl = request?.Url?.ToString();
+            var requestUri = QueryStringHelper.RemovePossibleQueryString(fullUrl);
+
+            var webView = (HybridWebView)_handler.VirtualView;
+
             if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
                 var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
@@ -26,7 +28,7 @@ namespace HybridWebView
                 string contentType;
                 if (string.IsNullOrEmpty(relativePath))
                 {
-                    relativePath = ((HybridWebView)_handler.VirtualView).MainFile;
+                    relativePath = webView.MainFile;
                     contentType = "text/html";
                 }
                 else
@@ -44,27 +46,21 @@ namespace HybridWebView
                 Stream? contentStream = null;
 
                 // Check to see if the request is a proxy request.
-                if (!string.IsNullOrEmpty(fullUrl) &&
-                    fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?") &&
-                    _handler.VirtualView is HybridWebView)
+                if (relativePath == HybridWebView.ProxyRequestPath)
                 {
-                    var webView = _handler.VirtualView as HybridWebView;
+                    var args = new HybridWebViewProxyEventArgs(fullUrl);
 
-                    if (webView != null)
+                    // TODO: Don't block async. Consider making this an async call, and then calling DidFinish when done
+                    webView.OnProxyRequestMessage(args).Wait();
+
+                    if (args.ResponseStream != null)
                     {
-                        //Create an event args object to pass to the event.
-                        var args = new HybridWebViewProxyEventArgs(fullUrl);
-                        webView.OnProxyRequestMessage(args).Wait();
-
-                        if (args.ResponseStream != null)
-                        {
-                            contentType = args.ResponseContentType ?? "text/plain";
-                            contentStream = args.ResponseStream;
-                        }
+                        contentType = args.ResponseContentType ?? "text/plain";
+                        contentStream = args.ResponseStream;
                     }
                 }
 
-                if(contentStream == null)
+                if (contentStream == null)
                 {
                     contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
                 }

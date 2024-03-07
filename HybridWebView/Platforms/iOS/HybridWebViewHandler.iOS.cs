@@ -122,24 +122,18 @@ namespace HybridWebView
 
                     Stream? contentStream = null;
 
-                    //Check to see if the request is a proxy request.
-                    if (!string.IsNullOrEmpty(fullUrl) &&
-                        fullUrl.ToLowerInvariant().StartsWith(HybridWebView.AppOrigin + "proxy?") &&
-                        _webViewHandler.VirtualView is HybridWebView)
+                    // Check to see if the request is a proxy request.
+                    if (relativePath == HybridWebView.ProxyRequestPath)
                     {
-                        var webView = _webViewHandler.VirtualView as HybridWebView;
+                        var args = new HybridWebViewProxyEventArgs(fullUrl);
 
-                        if (webView != null)
+                        // TODO: Don't block async. Consider making this an async call, and then calling DidFinish when done
+                        hwv.OnProxyRequestMessage(args).Wait();
+
+                        if (args.ResponseStream != null)
                         {
-                            //Create an event args object to pass to the event.
-                            var args = new HybridWebViewProxyEventArgs(fullUrl);
-                            webView.OnProxyRequestMessage(args).Wait();
-
-                            if (args.ResponseStream != null)
-                            {
-                                contentType = args.ResponseContentType ?? "text/plain";
-                                contentStream = args.ResponseStream;
-                            }
+                            contentType = args.ResponseContentType ?? "text/plain";
+                            contentStream = args.ResponseStream;
                         }
                     }
 

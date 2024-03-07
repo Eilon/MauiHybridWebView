@@ -5,6 +5,8 @@ namespace HybridWebView
 {
     public partial class HybridWebView : WebView
     {
+        internal const string ProxyRequestPath = "proxy";
+
         /// <summary>
         /// Specifies the file within the <see cref="HybridAssetRoot"/> that should be served as the main file. The
         /// default value is <c>index.html</c>.
@@ -36,10 +38,10 @@ namespace HybridWebView
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
         /// <summary>
-        /// Async Event handler that is called when a proxy request is made from the webview.
+        /// Async event handler that is called when a proxy request is received from the webview.
         /// </summary>
 
-        public event Func<HybridWebViewProxyEventArgs, Task>? OnProxyRequest;
+        public event Func<HybridWebViewProxyEventArgs, Task>? ProxyRequestReceived;
 
         public void Navigate(string url)
         {
@@ -131,14 +133,12 @@ namespace HybridWebView
         /// <returns>A Task</returns>
         public virtual async Task OnProxyRequestMessage(HybridWebViewProxyEventArgs args)
         {
-            //Don't let failed proxy requests crash the app.
+            // Don't let failed proxy requests crash the app.
             try
             {
-                //When no query parameters are passed, the SendRoundTripMessageToDotNet javascript method is expected to have been called.
-                if (args.QueryParams != null && args.QueryParams.ContainsKey("__ajax"))
+                // When no query parameters are passed, the SendRoundTripMessageToDotNet JavaScript method is expected to have been called.
+                if (args.QueryParams != null && args.QueryParams.TryGetValue("__ajax", out string? jsonQueryString))
                 {
-                    var jsonQueryString = args.QueryParams["__ajax"];
-
                     if (jsonQueryString != null)
                     {
                         var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(jsonQueryString);
@@ -159,14 +159,14 @@ namespace HybridWebView
                                     dotNetInvokeResult = new DotNetInvokeResult()
                                     {
                                         Result = JsonSerializer.Serialize(result),
-                                        IsJson = true
+                                        IsJson = true,
                                     };
                                 }
                                 else
                                 {
                                     dotNetInvokeResult = new DotNetInvokeResult()
                                     {
-                                        Result = result
+                                        Result = result,
                                     };
                                 }
                                 args.ResponseStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
@@ -174,9 +174,9 @@ namespace HybridWebView
                         }
                     }
                 }
-                else if (OnProxyRequest != null) //Check to see if user has subscribed to the event.
+                else if (ProxyRequestReceived != null) //Check to see if user has subscribed to the event.
                 {
-                    await OnProxyRequest(args);
+                    await ProxyRequestReceived(args);
                 }
             }
             catch (Exception ex)

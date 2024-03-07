@@ -56,7 +56,7 @@ window.HybridWebView = {
         const message = JSON.stringify(body);
 
         try {
-            //Android web view doesn't support getting the body of a POST request, so we use a GET request instead and pass the body as a query string parameter.
+            // Android web view doesn't support getting the body of a POST request, so we use a GET request instead and pass the body as a query string parameter.
             var requestUrl = `${window.location.origin}/proxy?__ajax=${encodeURIComponent(message)}`;
 
             const rawResponse = await fetch(requestUrl, {

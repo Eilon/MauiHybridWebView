@@ -25,7 +25,7 @@ public partial class MainPage : ContentPage
 
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
 
-        myHybridWebView.OnProxyRequest += MyHybridWebView_OnProxyRequest;
+        myHybridWebView.ProxyRequestReceived += MyHybridWebView_OnProxyRequestReceived;
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
@@ -62,11 +62,11 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async Task MyHybridWebView_OnProxyRequest(HybridWebView.HybridWebViewProxyEventArgs args)
+    private async Task MyHybridWebView_OnProxyRequestReceived(HybridWebView.HybridWebViewProxyEventArgs args)
     {
-        //In an app, you might load responses from a sqlite database, zip file, or create files in memory (e.g. using SkiaSharp or System.Drawing)
+        // In an app, you might load responses from a sqlite database, zip file, or create files in memory (e.g. using SkiaSharp or System.Drawing)
 
-        //Check to see if our custom parameter is present.
+        // Check to see if our custom parameter is present.
         if (args.QueryParams.ContainsKey("operation"))
         {
             switch (args.QueryParams["operation"])
@@ -271,6 +271,6 @@ public partial class MainPage : ContentPage
         MainPage = 0,
         RawMessages = 1,
         MethodInvoke = 2,
-        ProxyUrls = 3
+        ProxyUrls = 3,
     }
 }

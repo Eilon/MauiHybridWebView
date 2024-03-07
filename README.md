@@ -61,7 +61,7 @@ Note: If you'd like to check out an already completed sample, go to https://gith
 
 1. Ensure you have Visual Studio 2022 with the .NET MAUI workload installed
 1. Create a **.NET MAUI App** project that targets .NET 8 (or use an existing one)
-1. Add a reference to the `EJL.MauiHybridWebView` package ([NuGet package](https://www.nuget.org/packages/EJL.MauiHybridWebView/1.0.0-preview3)):
+1. Add a reference to the `EJL.MauiHybridWebView` package ([NuGet package](https://www.nuget.org/packages/EJL.MauiHybridWebView/1.0.0-preview5)):
     1. Right-click on the **Dependencies** node in Solution Explorer and select **Manage NuGet Packages**
     1. Select the **Browse** tab
     1. Ensure the **Include prerelease** checkbox is checked
@@ -122,10 +122,10 @@ Note: If you'd like to check out an already completed sample, go to https://gith
 ## Proxy URLs
 
 The `HybridWebView` control can redirect URL requests to native code, and allow custom responses streams to be set. 
-This allows scenarios such as dynamically generating content, loading content from compressed files like ZIP or SQLite, or loading content from the internet that doesn't support CORs.
+This allows scenarios such as dynamically generating content, loading content from compressed files like ZIP or SQLite, or loading content from the internet that doesn't support CORS.
 
-To use this feature, set the `OnProxyRequest` event in the `HybridWebView` control. 
-When the event handler is called set the `ResponseStream` and optionally the `ResponseContentType` aof the `HybridWebViewProxyEventArgs` object received in the `OnProxyRequest` method.
+To use this feature, handle the `ProxyRequestReceived` event in the `HybridWebView` control. 
+When the event handler is called set the `ResponseStream` and optionally the `ResponseContentType` of the `HybridWebViewProxyEventArgs` object received in the `OnProxyRequest` method.
 
 The `HybridWebViewProxyEventArgs` has the following properties:
 
@@ -137,7 +137,7 @@ The `HybridWebViewProxyEventArgs` has the following properties:
 | `Url` | `string` | The full URL that was requested. |
 
 ```csharp
-myWebView.OnProxyRequest += async (args) =>
+myWebView.ProxyRequestReceived += async (args) =>
 {
     //Use the query string parameters to determine what to do.
     if (args.QueryParams.TryGetValue("myParameter", out var myParameter))
@@ -157,13 +157,13 @@ myWebView.OnProxyRequest += async (args) =>
 ```
 
 In your web app, you can make requests to the proxy URL by either using relative paths like `/proxy?myParameter=myValue` or an absolute path by appending the relative path tot he pages origin location `window.location.origin + '/proxy?myParameter=myValue'`.
-Be sure to encode the query string parameters to ensure they are properly handled. Here are some ways to implement proxy url's in your web app:
+Be sure to encode the query string parameters so that they are properly handled. Here are some ways to implement proxy URLs in your web app:
 
-1. Use proxy URL's with HTML tags. 
+1. Use proxy URLs with HTML tags. 
    ```html
    <img src="/proxy?myParameter=myValue" />
    ```
-2. Use proxy URL's in JavaScript. 
+2. Use proxy URLs in JavaScript. 
    ```js
    var request = window.location.origin + '/proxy?myParameter=' + encodeURIComponent('myValue');
 
@@ -171,7 +171,7 @@ Be sure to encode the query string parameters to ensure they are properly handle
 	   .then(response => response.text())
 	   .then(data => console.log(data));
    ```
-  3. Use proxy URL's with other JavaScript libraries. Some libraries only allow you to pass in string URL's. If you want to create the response in C# (e.g. generate content, or load from a compressed file), you can use a proxy URL to allow you to fullfil the response in C#. 
+  3. Use proxy URLs with other JavaScript libraries. Some libraries only allow you to pass in string URLs. If you want to create the response in C# (for example, to generate content, or load from a compressed file), you can use a proxy URL to allow you to fulfil the response in C#.
  
 **NOTE:** Data from the webview can only be set in the proxy query string. POST body data is not supported as the native `WebView` in platforms do not support it.
 

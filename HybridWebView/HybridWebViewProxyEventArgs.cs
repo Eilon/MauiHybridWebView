@@ -1,12 +1,12 @@
 ﻿namespace HybridWebView
 {
     /// <summary>
-    /// Event arg object for a proxy request from the hybrid webview.
+    /// Event arg object for a proxy request from the <see cref="HybridWebView"/>.
     /// </summary>
     public class HybridWebViewProxyEventArgs
     {
         /// <summary>
-        /// Event arg object for a proxy request from the hybrid webview.
+        /// Creates a new instance of <see cref="HybridWebViewProxyEventArgs"/>.
         /// </summary>
         /// <param name="fullUrl">The full request URL.</param>
         public HybridWebViewProxyEventArgs(string fullUrl)

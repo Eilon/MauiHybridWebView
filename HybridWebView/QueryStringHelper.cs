@@ -14,9 +14,11 @@
                 : url.Substring(0, indexOfQueryString);
         }
 
+        // TODO: Replace this
+
         /// <summary>
         /// A simple utility that takes a URL, extracts the query string and returns a dictionary of key-value pairs.
-        /// Note that values are unescaped. Maually created URLs in JavaScript should use encodeURIComponent to escape values.
+        /// Note that values are unescaped. Manually created URLs in JavaScript should use encodeURIComponent to escape values.
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>

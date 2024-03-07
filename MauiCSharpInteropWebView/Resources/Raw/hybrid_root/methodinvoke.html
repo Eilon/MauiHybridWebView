@@ -26,8 +26,9 @@
         }
 
         async function invokeDotNetFibonacciMethod() {
-            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('Fibonacci', [Math.round(Math.random() * 30) + 1]);
-            Log('C# Fibonacci result: ' + r);
+            var fibNumber = Math.round(Math.random() * 30) + 1;
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('Fibonacci', [fibNumber]);
+            Log('C# Fibonacci result for ' + fibNumber + ': ' + r);
         }
 
         async function invokeDotNetMethodJsonResult() {
