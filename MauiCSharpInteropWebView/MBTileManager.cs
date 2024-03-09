@@ -9,14 +9,14 @@ namespace MauiCSharpInteropWebView
     /// </summary>
     public class MBTileManager
     {
-        private SQLiteConnection conn = null;
+        private SQLiteConnection _conn;
 
         /// <summary>
         /// Creates an SQLite connection to an MBTiles file and retrieves tiles from it.
         /// An MBTiles file is a SQLite database that contains map tiles and has a standard table format.
         /// https://wiki.openstreetmap.org/wiki/MBTiles
-        /// <paramref name="assetPath"/> The path to the MBTiles file in the app's assets folder.</param>
         /// </summary>
+        /// <param name="assetPath">The path to the MBTiles file in the app's assets folder.</param>
         public MBTileManager(string assetPath)
         {
             //Copy asset to app data storage.
@@ -36,12 +36,12 @@ namespace MauiCSharpInteropWebView
                         }
                     }
 
-                    conn = new SQLiteConnection(localPath);
+                    _conn = new SQLiteConnection(localPath);
                 });
-            } 
+            }
             else
             {
-                conn = new SQLiteConnection(localPath);
+                _conn = new SQLiteConnection(localPath);
             }
         }
 
@@ -54,18 +54,18 @@ namespace MauiCSharpInteropWebView
         /// <returns></returns>
         public byte[] GetTile(long? x, long? y, long? z)
         {
-            if(conn != null && x != null && y != null && z != null)
+            if (_conn != null && x != null && y != null && z != null)
             {
                 //Inverse Y value as mbtiles uses TMS
                 long inverseY = ((long)Math.Pow(2, z.Value) - 1) - y.Value;
 
-                var tileResults = conn.Query<TileResult>(String.Format("SELECT tile_data, tile_row, tile_column, zoom_level FROM tiles WHERE tile_column = {0} and tile_row = {1} and zoom_level = {2};", x, inverseY, z));
+                var tileResults = _conn.Query<TileResult>(String.Format("SELECT tile_data, tile_row, tile_column, zoom_level FROM tiles WHERE tile_column = {0} and tile_row = {1} and zoom_level = {2};", x, inverseY, z));
 
                 if (tileResults.Count > 0 && tileResults[0].tile_data != null)
                 {
                     return tileResults[0].tile_data;
                 }
-            } 
+            }
 
             return null;
         }
