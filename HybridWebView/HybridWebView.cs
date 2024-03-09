@@ -229,7 +229,7 @@ namespace HybridWebView
         private sealed class DotNetInvokeResult
         {
             public object? Result { get; set; }
-            public bool IsJson { get; set; };
+            public bool IsJson { get; set; }
         }
 
         internal static async Task<string?> GetAssetContentAsync(string assetPath)
