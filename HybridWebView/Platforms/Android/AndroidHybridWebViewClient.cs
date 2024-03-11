@@ -1,4 +1,5 @@
 ﻿using Android.Webkit;
+using Java.Time;
 using Microsoft.Maui.Platform;
 using System.Text;
 using AWebView = Android.Webkit.WebView;
@@ -15,8 +16,10 @@ namespace HybridWebView
         }
         public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
         {
-            var requestUri = request?.Url?.ToString();
-            requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
+            var fullUrl = request?.Url?.ToString();
+            var requestUri = QueryStringHelper.RemovePossibleQueryString(fullUrl);
+
+            var webView = (HybridWebView)_handler.VirtualView;
 
             if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
@@ -25,7 +28,7 @@ namespace HybridWebView
                 string contentType;
                 if (string.IsNullOrEmpty(relativePath))
                 {
-                    relativePath = ((HybridWebView)_handler.VirtualView).MainFile;
+                    relativePath = webView.MainFile;
                     contentType = "text/html";
                 }
                 else
@@ -40,7 +43,27 @@ namespace HybridWebView
                     };
                 }
 
-                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                Stream? contentStream = null;
+
+                // Check to see if the request is a proxy request.
+                if (relativePath == HybridWebView.ProxyRequestPath)
+                {
+                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+
+                    // TODO: Don't block async. Consider making this an async call, and then calling DidFinish when done
+                    webView.OnProxyRequestMessage(args).Wait();
+
+                    if (args.ResponseStream != null)
+                    {
+                        contentType = args.ResponseContentType ?? "text/plain";
+                        contentStream = args.ResponseStream;
+                    }
+                }
+
+                if (contentStream == null)
+                {
+                    contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                }
 
                 if (contentStream is null)
                 {

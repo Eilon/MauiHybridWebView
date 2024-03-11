@@ -1,7 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
-using System;
-using System.Diagnostics.Tracing;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using Windows.Storage.Streams;
 
 namespace HybridWebView
@@ -36,7 +35,6 @@ namespace HybridWebView
             PlatformWebView.CoreWebView2.Settings.IsWebMessageEnabled = true;
             PlatformWebView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
             PlatformWebView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
-
         }
 
         private partial void NavigateCore(string url)
@@ -73,7 +71,27 @@ namespace HybridWebView
                     };
                 }
 
-                var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                Stream? contentStream = null;
+
+                // Check to see if the request is a proxy request
+                if (relativePath == ProxyRequestPath)
+                {
+                    var fullUrl = eventArgs.Request.Uri;
+
+                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+                    await OnProxyRequestMessage(args);
+
+                    if (args.ResponseStream != null)
+                    {
+                        contentType = args.ResponseContentType ?? "text/plain";
+                        contentStream = args.ResponseStream;
+                    }
+                }
+
+                if (contentStream is null)
+                {
+                    contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                }
 
                 if (contentStream is null)
                 {

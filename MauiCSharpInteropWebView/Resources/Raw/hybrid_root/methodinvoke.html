@@ -11,10 +11,34 @@
             return sum;
         }
 
+        /* Async invoke examples */
+
+
         function CallDotNetMethod() {
             Log('Calling a method in .NET with some parameters');
 
             HybridWebView.SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
+        }
+
+        async function invokeRoundTripDotNetMethod() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('RoundTripCallFromScript', ["param1", 123]);
+            Log(r);
+        }
+
+        async function invokeDotNetFibonacciMethod() {
+            var fibNumber = Math.round(Math.random() * 30) + 1;
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('Fibonacci', [fibNumber]);
+            Log('C# Fibonacci result for ' + fibNumber + ': ' + r);
+        }
+
+        async function invokeDotNetMethodJsonResult() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('GetObjectResponse');
+            Log('C# response: ' + JSON.stringify(r));
+        }
+
+        async function invokeDotNetMethodJsonResultWithInput() {
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('GetObjectResponseWithInput', [Math.random() * 100]);
+            Log('C# response: ' + JSON.stringify(r));
         }
     </script>
     <script src="_hwv/HybridWebView.js"></script>
@@ -24,18 +48,32 @@
 <body>
     <h1>HybridWebView demo: Method invoke</h1>
     <div class="navBar">
-        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | Method invoke
+        <a href="/">Main page</a> | <a href="/rawmessages.html">Raw messages</a> | Method invoke | <a href="/proxy.html">Proxy URLs</a>
     </div>
     <div>
         Methods can be invoked in both directions:
 
         <ul>
-            <li>JavaScript can invoke .NET methods by calling <code>HybridWebView.SendInvokeMessageToDotNet("DotNetMethodName", ["param1", 123]);</code>.</li>
-            <li>.NET can invoke JavaScript methods by calling <code>var sum = await webView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);</code>.</li>
+            <li>JavaScript can invoke .NET methods without recieving a result by calling <code>HybridWebView.SendInvokeMessageToDotNet("DotNetMethodName", ["param1", 123]);</code>.</li>
+            <li>JavaScript can asynchronously invoke .NET methods and recieve a result by calling <code>var result = await HybridWebView.SendInvokeMessageToDotNetAsync('DotNetMethodName', ["param1", 123]);</code>.</li>
+            <li>.NET can invoke JavaScript methods and recieve a result by calling <code>var sum = await webView.InvokeJsMethodAsync<int>("JsAddNumbers", 123, 456);</code>.</li>
         </ul>
     </div>
     <div>
-        <button type="button" onclick="CallDotNetMethod()">Call .NET method with some parameters</button>
+        <p>
+            <b>Sync invoke - Call .NET, no response</b>
+            <br />
+            <button type="button" onclick="CallDotNetMethod()">Call .NET method with some parameters</button>
+        </p>
+
+        <p>
+            <b>Async invoke - Call .NET, get response</b>
+            <br />
+            <button type="button" onclick="invokeRoundTripDotNetMethod()">Simple round trip call to .NET</button>
+            <button type="button" onclick="invokeDotNetFibonacciMethod()">Invoke .NET Fibonacci method</button>
+            <button type="button" onclick="invokeDotNetMethodJsonResult()">Invoke .NET and get JSON result</button>
+            <button type="button" onclick="invokeDotNetMethodJsonResultWithInput()">Invoke .NET with input and get JSON result</button>
+        </p>
     </div>
     <h2>
         JS message log:

@@ -2,6 +2,7 @@
 using Microsoft.Maui.Platform;
 using System.Drawing;
 using System.Globalization;
+using System.Reflection.Metadata;
 using System.Runtime.Versioning;
 using WebKit;
 
@@ -66,31 +67,37 @@ namespace HybridWebView
 
             [Export("webView:startURLSchemeTask:")]
             [SupportedOSPlatform("ios11.0")]
-            public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
+            public async void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
             {
-                var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url?.AbsoluteString ?? "", out var contentType, statusCode: out var statusCode);
-                if (statusCode == 200)
+                var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
+
+                var responseData = await GetResponseBytes(url);
+
+                if (responseData.StatusCode == 200)
                 {
                     using (var dic = new NSMutableDictionary<NSString, NSString>())
                     {
-                        dic.Add((NSString)"Content-Length", (NSString)(responseBytes.Length.ToString(CultureInfo.InvariantCulture)));
-                        dic.Add((NSString)"Content-Type", (NSString)contentType);
+                        dic.Add((NSString)"Content-Length", (NSString)(responseData.ResponseBytes.Length.ToString(CultureInfo.InvariantCulture)));
+                        dic.Add((NSString)"Content-Type", (NSString)responseData.ContentType);
                         // Disable local caching. This will prevent user scripts from executing correctly.
                         dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
                         if (urlSchemeTask.Request.Url != null)
                         {
-                            using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+                            using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, responseData.StatusCode, "HTTP/1.1", dic);
                             urlSchemeTask.DidReceiveResponse(response);
                         }
-
                     }
-                    urlSchemeTask.DidReceiveData(NSData.FromArray(responseBytes));
+
+                    urlSchemeTask.DidReceiveData(NSData.FromArray(responseData.ResponseBytes));
                     urlSchemeTask.DidFinish();
                 }
             }
 
-            private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
+            private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytes(string? url)
             {
+                string contentType;
+
+                string fullUrl = url;
                 url = QueryStringHelper.RemovePossibleQueryString(url);
 
                 if (new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
@@ -118,27 +125,43 @@ namespace HybridWebView
                         };
                     }
 
-                    var contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                    Stream? contentStream = null;
+
+                    // Check to see if the request is a proxy request.
+                    if (relativePath == HybridWebView.ProxyRequestPath)
+                    {
+                        var args = new HybridWebViewProxyEventArgs(fullUrl);
+
+                        await hwv.OnProxyRequestMessage(args);
+
+                        if (args.ResponseStream != null)
+                        {
+                            contentType = args.ResponseContentType ?? "text/plain";
+                            contentStream = args.ResponseStream;
+                        }
+                    }
+
+                    if (contentStream == null)
+                    {
+                        contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
+                    }
+
                     if (contentStream is not null)
                     {
-                        statusCode = 200;
                         using var ms = new MemoryStream();
                         contentStream.CopyTo(ms);
-                        return ms.ToArray();
+                        return (ms.ToArray(), contentType, StatusCode: 200);
                     }
 
                     var assetPath = Path.Combine(bundleRootDir, relativePath);
 
                     if (File.Exists(assetPath))
                     {
-                        statusCode = 200;
-                        return File.ReadAllBytes(assetPath);
+                        return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
                     }
                 }
 
-                statusCode = 404;
-                contentType = string.Empty;
-                return Array.Empty<byte>();
+                return (Array.Empty<byte>(), ContentType: string.Empty, StatusCode: 404);
             }
 
             [Export("webView:stopURLSchemeTask:")]

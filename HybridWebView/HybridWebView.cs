@@ -1,9 +1,12 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 
 namespace HybridWebView
 {
     public partial class HybridWebView : WebView
     {
+        internal const string ProxyRequestPath = "proxy";
+
         /// <summary>
         /// Specifies the file within the <see cref="HybridAssetRoot"/> that should be served as the main file. The
         /// default value is <c>index.html</c>.
@@ -33,6 +36,12 @@ namespace HybridWebView
         public bool EnableWebDevTools { get; set; }
 
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
+
+        /// <summary>
+        /// Async event handler that is called when a proxy request is received from the webview.
+        /// </summary>
+
+        public event Func<HybridWebViewProxyEventArgs, Task>? ProxyRequestReceived;
 
         public void Navigate(string url)
         {
@@ -117,7 +126,66 @@ namespace HybridWebView
 
         }
 
-        private void InvokeDotNetMethod(JSInvokeMethodData invokeData)
+        /// <summary>
+        /// Handle the proxy request message.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns>A Task</returns>
+        public virtual async Task OnProxyRequestMessage(HybridWebViewProxyEventArgs args)
+        {
+            // Don't let failed proxy requests crash the app.
+            try
+            {
+                // When no query parameters are passed, the SendRoundTripMessageToDotNet JavaScript method is expected to have been called.
+                if (args.QueryParams != null && args.QueryParams.TryGetValue("__ajax", out string? jsonQueryString))
+                {
+                    if (jsonQueryString != null)
+                    {
+                        var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(jsonQueryString);
+
+                        if (invokeData != null && invokeData.MethodName != null)
+                        {
+                            object? result = InvokeDotNetMethod(invokeData);
+
+                            if (result != null)
+                            {
+                                args.ResponseContentType = "application/json";
+
+                                DotNetInvokeResult dotNetInvokeResult;
+
+                                var resultType = result.GetType();
+                                if (resultType.IsArray || resultType.IsClass)
+                                {
+                                    dotNetInvokeResult = new DotNetInvokeResult()
+                                    {
+                                        Result = JsonSerializer.Serialize(result),
+                                        IsJson = true,
+                                    };
+                                }
+                                else
+                                {
+                                    dotNetInvokeResult = new DotNetInvokeResult()
+                                    {
+                                        Result = result,
+                                    };
+                                }
+                                args.ResponseStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
+                            }
+                        }
+                    }
+                }
+                else if (ProxyRequestReceived != null) //Check to see if user has subscribed to the event.
+                {
+                    await ProxyRequestReceived(args);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An exception occurred while handling the proxy request: {ex.Message}");
+            }
+        }
+
+        private object? InvokeDotNetMethod(JSInvokeMethodData invokeData)
         {
             if (JSInvokeTarget is null)
             {
@@ -140,7 +208,7 @@ namespace HybridWebView
                     .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
                     .ToArray();
 
-            var returnValue = invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
+            return invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
         }
 
         private sealed class JSInvokeMethodData
@@ -153,6 +221,15 @@ namespace HybridWebView
         {
             public int MessageType { get; set; }
             public string? MessageContent { get; set; }
+        }
+
+        /// <summary>
+        /// A simple internal class to hold the result of a .NET method invocation, and whether it should be treated as JSON.
+        /// </summary>
+        private sealed class DotNetInvokeResult
+        {
+            public object? Result { get; set; }
+            public bool IsJson { get; set; }
         }
 
         internal static async Task<string?> GetAssetContentAsync(string assetPath)

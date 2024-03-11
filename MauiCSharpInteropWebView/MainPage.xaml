@@ -32,7 +32,8 @@
 
         <Editor Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding MessageLog}" IsReadOnly="True" CursorPosition="{Binding MessageLogPosition}" />
 
-        <hwv:HybridWebView Grid.Row="3" Grid.ColumnSpan="3" x:Name="myHybridWebView" HybridAssetRoot="hybrid_root" MainFile="hybrid_app.html" RawMessageReceived="OnHybridWebViewRawMessageReceived" />
+        <hwv:HybridWebView Grid.Row="3" Grid.ColumnSpan="3" x:Name="myHybridWebView" HybridAssetRoot="hybrid_root" MainFile="hybrid_app.html" 
+                           RawMessageReceived="OnHybridWebViewRawMessageReceived"/>
     </Grid>
 
 </ContentPage>
