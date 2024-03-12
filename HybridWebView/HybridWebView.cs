@@ -35,13 +35,21 @@ namespace HybridWebView
         /// </summary>
         public bool EnableWebDevTools { get; set; }
 
+        /// <summary>
+        /// Raised when a raw message is received from the web view. Raw messages are strings that have no additional processing.
+        /// </summary>
         public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
         /// <summary>
-        /// Async event handler that is called when a proxy request is received from the webview.
+        /// Async event handler that is called when a proxy request is received from the web view.
         /// </summary>
-
         public event Func<HybridWebViewProxyEventArgs, Task>? ProxyRequestReceived;
+
+        /// <summary>
+        /// Raised after the web view is initialized but before any content has been loaded into the web view. The event arguments provide the instance of the platform-specific web view control.
+        /// </summary>
+        public event EventHandler<HybridWebViewInitializedEventArgs>? HybridWebViewInitialized;
+
 
         public void Navigate(string url)
         {
@@ -53,6 +61,13 @@ namespace HybridWebView
             base.OnHandlerChanged();
 
             await InitializeHybridWebView();
+
+            HybridWebViewInitialized?.Invoke(this, new HybridWebViewInitializedEventArgs()
+            {
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+                WebView = PlatformWebView,
+#endif
+            });
 
             Navigate(StartPath);
         }

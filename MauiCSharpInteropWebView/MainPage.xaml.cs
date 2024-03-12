@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using HybridWebView;
+using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 
@@ -27,6 +28,16 @@ public partial class MainPage : ContentPage
         myHybridWebView.JSInvokeTarget = new MyJSInvokeTarget(this);
 
         myHybridWebView.ProxyRequestReceived += MyHybridWebView_OnProxyRequestReceived;
+
+        myHybridWebView.HybridWebViewInitialized += MyHybridWebView_WebViewInitialized;
+    }
+
+    private void MyHybridWebView_WebViewInitialized(object sender, HybridWebViewInitializedEventArgs e)
+    {
+#if WINDOWS
+        // Disable the user manually zooming
+        e.WebView.CoreWebView2.Settings.IsZoomControlEnabled = false;
+#endif
     }
 
     public string CurrentPageName => $"Current hybrid page: {_currentPage}";
