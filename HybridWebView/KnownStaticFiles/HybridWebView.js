@@ -20,7 +20,10 @@ window.HybridWebView = {
                 paramValues = [paramValues];
             }
             for (var i = 0; i < paramValues.length; i++) {
-                paramValues[i] = JSON.stringify(paramValues[i]);
+                // Let 'null' and 'undefined' be passed as-is, but stringify all other values
+                if (paramValues[i] != null) {
+                    paramValues[i] = JSON.stringify(paramValues[i]);
+                }
             }
         }
 

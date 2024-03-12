@@ -11,15 +11,21 @@
             return sum;
         }
 
-        /* Async invoke examples */
-
-
         function CallDotNetMethod() {
             Log('Calling a method in .NET with some parameters');
 
             HybridWebView.SendInvokeMessageToDotNet("CallMeFromScript", ["msg from js", 987]);
         }
 
+        function CallEmptyParams() {
+            HybridWebView.SendInvokeMessageToDotNet("CallEmptyParams", [null, undefined]);
+        }
+
+        function CallNoParams() {
+            HybridWebView.SendInvokeMessageToDotNet("CallNoParams");
+        }
+
+        /* Async invoke examples */
         async function invokeRoundTripDotNetMethod() {
             var r = await HybridWebView.SendInvokeMessageToDotNetAsync('RoundTripCallFromScript', ["param1", 123]);
             Log(r);
@@ -64,6 +70,8 @@
             <b>Sync invoke - Call .NET, no response</b>
             <br />
             <button type="button" onclick="CallDotNetMethod()">Call .NET method with some parameters</button>
+            <button type="button" onclick="CallEmptyParams()">Call .NET method with null/undefined parameters</button>
+            <button type="button" onclick="CallNoParams()">Call .NET method with no parameters</button>
         </p>
 
         <p>

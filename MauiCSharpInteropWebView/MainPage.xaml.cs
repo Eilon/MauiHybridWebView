@@ -175,7 +175,7 @@ public partial class MainPage : ContentPage
 
     private sealed class MyJSInvokeTarget
     {
-        private MainPage _mainPage;
+        private readonly MainPage _mainPage;
 
         public MyJSInvokeTarget(MainPage mainPage)
         {
@@ -185,6 +185,16 @@ public partial class MainPage : ContentPage
         public void CallMeFromScript(string message, int value)
         {
             _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with message='{message}' and value={value}");
+        }
+
+        public void CallEmptyParams(string thisIsNull, int thisIsUndefined)
+        {
+            _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with null='{thisIsNull}' and undefined={thisIsUndefined}");
+        }
+
+        public void CallNoParams()
+        {
+            _mainPage.WriteToLog($"I'm a .NET method called from JavaScript with no params");
         }
 
         /// <summary>
