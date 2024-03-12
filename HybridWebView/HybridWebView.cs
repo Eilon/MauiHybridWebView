@@ -220,7 +220,7 @@ namespace HybridWebView
 
             var paramObjectValues =
                 invokeData.ParamValues?
-                    .Zip(invokeMethod.GetParameters(), (s, p) => JsonSerializer.Deserialize(s, p.ParameterType))
+                    .Zip(invokeMethod.GetParameters(), (s, p) => s == null ? null : JsonSerializer.Deserialize(s, p.ParameterType))
                     .ToArray();
 
             return invokeMethod.Invoke(JSInvokeTarget, paramObjectValues);
