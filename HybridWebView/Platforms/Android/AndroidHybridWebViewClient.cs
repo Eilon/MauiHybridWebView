@@ -46,7 +46,7 @@ namespace HybridWebView
                 Stream? contentStream = null;
 
                 // Check to see if the request is a proxy request.
-                if (relativePath == HybridWebView.ProxyRequestPath)
+                if (relativePath == HybridWebView.ProxyRequestPath || relativePath?.StartsWith($"{HybridWebView.ProxyRequestPath}\\") == true)
                 {
                     var args = new HybridWebViewProxyEventArgs(fullUrl);
 

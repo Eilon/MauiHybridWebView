@@ -74,7 +74,7 @@ namespace HybridWebView
                 Stream? contentStream = null;
 
                 // Check to see if the request is a proxy request
-                if (relativePath == ProxyRequestPath)
+                if (relativePath == ProxyRequestPath || relativePath?.StartsWith($"{HybridWebView.ProxyRequestPath}\\") == true)
                 {
                     var fullUrl = eventArgs.Request.Uri;
 
