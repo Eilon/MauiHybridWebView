@@ -48,6 +48,8 @@ namespace HybridWebView
             using var deferral = eventArgs.GetDeferral();
 
             var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+            var method = eventArgs.Request.Method;
+            var headers = eventArgs.Request.Headers.ToDictionary(p => p.Key, p => p.Value);
 
             if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
             {
@@ -78,7 +80,7 @@ namespace HybridWebView
                 {
                     var fullUrl = eventArgs.Request.Uri;
 
-                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+                    var args = new HybridWebViewProxyEventArgs(fullUrl, method, headers);
                     await OnProxyRequestMessage(args);
 
                     if (args.ResponseStream != null)

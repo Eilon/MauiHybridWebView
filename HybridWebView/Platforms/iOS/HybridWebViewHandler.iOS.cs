@@ -69,9 +69,7 @@ namespace HybridWebView
             [SupportedOSPlatform("ios11.0")]
             public async void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
             {
-                var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
-
-                var responseData = await GetResponseBytes(url);
+                var responseData = await GetResponseBytes(urlSchemeTask);
 
                 if (responseData.StatusCode == 200)
                 {
@@ -93,8 +91,12 @@ namespace HybridWebView
                 }
             }
 
-            private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytes(string? url)
+            private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytes(IWKUrlSchemeTask urlSchemeTask)
             {
+                var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
+                var method = urlSchemeTask.Request.HttpMethod;
+                var headers = urlSchemeTask.Request.Headers?.ToDictionary(p=> p.Key.ToString(), p=> p.Value.ToString());
+
                 string contentType;
 
                 string fullUrl = url;
@@ -130,7 +132,7 @@ namespace HybridWebView
                     // Check to see if the request is a proxy request.
                     if (relativePath == HybridWebView.ProxyRequestPath)
                     {
-                        var args = new HybridWebViewProxyEventArgs(fullUrl);
+                        var args = new HybridWebViewProxyEventArgs(fullUrl, method, headers);
 
                         await hwv.OnProxyRequestMessage(args);
 

@@ -18,6 +18,8 @@ namespace HybridWebView
         {
             var fullUrl = request?.Url?.ToString();
             var requestUri = QueryStringHelper.RemovePossibleQueryString(fullUrl);
+            var method = request?.Method;
+            var headers = request?.RequestHeaders;
 
             var webView = (HybridWebView)_handler.VirtualView;
 
@@ -48,7 +50,7 @@ namespace HybridWebView
                 // Check to see if the request is a proxy request.
                 if (relativePath == HybridWebView.ProxyRequestPath)
                 {
-                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+                    var args = new HybridWebViewProxyEventArgs(fullUrl, method, headers);
 
                     // TODO: Don't block async. Consider making this an async call, and then calling DidFinish when done
                     webView.OnProxyRequestMessage(args).Wait();
