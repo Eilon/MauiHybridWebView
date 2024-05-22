@@ -13,8 +13,12 @@
         {
             Url = fullUrl;
             QueryParams = QueryStringHelper.GetKeyValuePairs(fullUrl);
-            Method = method?.ToLower() ?? "GET";
-            Headers = headers ?? new Dictionary<string, string>();
+            RequestHeaders = headers ?? new Dictionary<string, string>();
+
+            if (Enum.TryParse(method ?? "GET", true, out HttpMethod methodResult))
+            {
+                Method = methodResult;
+            }
         }
 
         /// <summary>
@@ -25,7 +29,7 @@
         /// <summary>
         /// The request method.
         /// </summary>
-        public string Method { get; }
+        public HttpMethod Method { get; }
 
         /// <summary>
         /// Query string values extracted from the request URL.
@@ -35,17 +39,31 @@
         /// <summary>
         /// Header strings values extracted from the request.
         /// </summary>
-        public IDictionary<string, string> Headers { get; }
+        public IDictionary<string, string> RequestHeaders { get; }
+
+        /// <summary>
+        /// The response headers to be used to respond to the request.
+        /// </summary>
+        public IDictionary<string, string>? ResponseHeaders { get; set; }
 
         /// <summary>
         /// The response content type.
         /// </summary>
-
         public string? ResponseContentType { get; set; } = "text/plain";
 
         /// <summary>
         /// The response stream to be used to respond to the request.
         /// </summary>
         public Stream? ResponseStream { get; set; } = null;
+
+    }
+
+    public enum HttpMethod
+    {
+        GET,
+        POST,
+        PUT,
+        DELETE,
+        OPTIONS
     }
 }

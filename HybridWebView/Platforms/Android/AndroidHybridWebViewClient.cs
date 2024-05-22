@@ -46,6 +46,7 @@ namespace HybridWebView
                 }
 
                 Stream? contentStream = null;
+                IDictionary<string, string> responseHeaders = null;
 
                 // Check to see if the request is a proxy request.
                 if (relativePath == HybridWebView.ProxyRequestPath)
@@ -59,6 +60,7 @@ namespace HybridWebView
                     {
                         contentType = args.ResponseContentType ?? "text/plain";
                         contentStream = args.ResponseStream;
+                        responseHeaders = args.ResponseHeaders;
                     }
                 }
 
@@ -85,7 +87,7 @@ namespace HybridWebView
                 else
                 {
                     // TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
-                    return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType), contentStream);
+                    return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType, responseHeaders), contentStream);
                 }
             }
             else
@@ -108,9 +110,17 @@ namespace HybridWebView
             }
         }
 
-        private protected static IDictionary<string, string> GetHeaders(string contentType) =>
-            new Dictionary<string, string> {
-                { "Content-Type", contentType },
-            };
+        private protected static IDictionary<string, string> GetHeaders(string contentType, IDictionary<string, string>? baseHeaders = null)
+        {
+            if (baseHeaders == null) baseHeaders = new Dictionary<string, string>();
+
+            if (baseHeaders.ContainsKey("Content-Type") == false)
+            {
+                baseHeaders["Content-Type"] = contentType;
+            }
+
+            return baseHeaders;
+        }
+            
     }
 }
