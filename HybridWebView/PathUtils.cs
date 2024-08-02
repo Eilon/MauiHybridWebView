@@ -151,6 +151,10 @@ namespace HybridWebView
             //Sanitize the content type.
             mimeType = mimeTypeOrFileExtension.ToLowerInvariant() switch
             {
+                //WebAssembly file types
+                "wasm" => "application/wasm",
+                "wat" => "application/wat",
+
                 //Image file types
                 "png" => "image/png",
                 "jpg" or "jpeg" or "jfif" or "pjpeg" or "pjp" => "image/jpeg",
@@ -208,6 +212,7 @@ namespace HybridWebView
                 "js" or "javascript" => "text/javascript",
                 "css" => "text/css",
                 "csv" => "text/csv",
+                "md" => "text/markdown",
                 "plain" or "txt" => "text/plain",
 
                 _ => null,
