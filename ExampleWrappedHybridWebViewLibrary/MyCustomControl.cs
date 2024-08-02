@@ -71,7 +71,8 @@ namespace ExampleWrappedHybridWebViewLibrary
                         if (args.QueryParams.TryGetValue("resourceName", out string? resourceName) && !string.IsNullOrWhiteSpace(resourceName))
                         {
                             var thisAssembly = typeof(MyCustomControl).Assembly;
-                            using (var fs = thisAssembly.GetManifestResourceStream("ExampleWrappedHybridWebViewLibrary." + resourceName.Replace("/", ".")))
+                            var assemblyName = thisAssembly.GetName().Name;
+                            using (var fs = thisAssembly.GetManifestResourceStream($"{assemblyName}.{resourceName.Replace("/", ".")}"))
                             {
                                 if (fs != null)
                                 {
