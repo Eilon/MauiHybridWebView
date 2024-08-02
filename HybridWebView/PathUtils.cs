@@ -153,7 +153,6 @@ namespace HybridWebView
             {
                 //WebAssembly file types
                 "wasm" => "application/wasm",
-                "wat" => "application/wat",
 
                 //Image file types
                 "png" => "image/png",
@@ -213,7 +212,7 @@ namespace HybridWebView
                 "css" => "text/css",
                 "csv" => "text/csv",
                 "md" => "text/markdown",
-                "plain" or "txt" => "text/plain",
+                "plain" or "txt" or "wat" => "text/plain",
 
                 _ => null,
             }; 
