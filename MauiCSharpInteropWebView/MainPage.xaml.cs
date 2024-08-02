@@ -1,4 +1,5 @@
 ﻿using HybridWebView;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 using System.Text;
@@ -83,6 +84,36 @@ public partial class MainPage : ContentPage
         {
             switch (args.QueryParams["operation"])
             {
+                case "fetchWithCors":
+                    if(args.QueryParams.TryGetValue("url", out string urlParam) && !string.IsNullOrWhiteSpace(urlParam))
+                    {
+                        // Fetch a URL with CORS enabled.
+#if ANDROID
+                        var client = new HttpClient(new Xamarin.Android.Net.AndroidMessageHandler());
+#else
+                        var client = new HttpClient();
+#endif
+                        //Enable Cors
+                        client.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", "*");
+
+                        try
+                        {
+                            var response = await client.GetAsync(urlParam);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                args.ResponseStream = await response.Content.ReadAsStreamAsync();
+                                if (response.Content?.Headers?.ContentType != null)
+                                {
+                                    args.ResponseContentType = response.Content.Headers.ContentType.MediaType;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine("Error proxying request: " + ex.Message);
+                        }
+                    }
+                    break;
                 case "loadImageFromZip":
                     // Ensure the file name parameter is present.
                     if (args.QueryParams.TryGetValue("fileName", out string fileName) && fileName != null)
