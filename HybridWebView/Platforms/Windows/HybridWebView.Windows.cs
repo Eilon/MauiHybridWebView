@@ -52,26 +52,7 @@ namespace HybridWebView
             if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
             {
                 PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, eventArgs.Request.Uri, MainFile, out string? relativePath, out string contentType, out string fullUrl);
-                //var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
-
-                //string contentType;
-                //if (string.IsNullOrEmpty(relativePath))
-                //{
-                //    relativePath = MainFile;
-                //    contentType = "text/html";
-                //}
-                //else
-                //{
-                //    var requestExtension = Path.GetExtension(relativePath);
-                //    contentType = requestExtension switch
-                //    {
-                //        ".htm" or ".html" => "text/html",
-                //        ".js" => "application/javascript",
-                //        ".css" => "text/css",
-                //        _ => "text/plain",
-                //    };
-                //}
-
+                
                 Stream? contentStream = null;
                 IDictionary<string, string>? customHeaders = null;
 

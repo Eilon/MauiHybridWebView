@@ -25,45 +25,7 @@ namespace HybridWebView
             if (!string.IsNullOrEmpty(originalUrl) && new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
                 PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, originalUrl, webView.MainFile, out string? relativePath, out string contentType, out string fullUrl);
-                //var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
                 
-                //IDictionary<string, string>? customHeaders = null;
-
-                //string contentType;
-                //if (string.IsNullOrEmpty(relativePath))
-                //{
-                //    //The main file may be a URL that has a query string. Fpor example if we want the main page to go through the proxy.
-                //    if (!string.IsNullOrEmpty(webView.MainFile) && webView.MainFile.Contains("?"))
-                //    {
-                //        relativePath = QueryStringHelper.RemovePossibleQueryString(relativePath);
-                //    } 
-                //    else
-                //    {
-                //        relativePath = webView.MainFile;
-                //    }
-
-                //    //Try and get the mime type from the full URL (main file could be a URL that has a query string pointing to a file such as a PDF).
-                //    string? minType;
-                //    if(PathUtils.TryGetMimeType(fullUrl, out minType))
-                //    {
-                //        if (!string.IsNullOrEmpty(minType))
-                //        {
-                //            contentType = minType;
-                //        } else
-                //        {
-                //            contentType = PathUtils.HtmlMimeType;
-                //        }
-                //    } 
-                //    else
-                //    {
-                //        contentType = PathUtils.HtmlMimeType;
-                //    }
-                //}
-                //else
-                //{
-                //    contentType = PathUtils.GetMimeType(fullUrl);
-                //}
-
                 Stream? contentStream = null;
                 IDictionary<string, string>? customHeaders = null;
 

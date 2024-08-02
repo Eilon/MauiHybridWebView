@@ -60,8 +60,6 @@ namespace ExampleWrappedHybridWebViewLibrary
 
         private async Task WebView_ProxyRequestReceived(HybridWebView.HybridWebViewProxyEventArgs args)
         {
-            // In an app, you might load responses from a sqlite database, zip file, or create files in memory (e.g. using SkiaSharp or System.Drawing)
-
             // Check to see if our custom parameter is present.
             if (args.QueryParams.ContainsKey("operation"))
             {

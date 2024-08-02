@@ -7,8 +7,8 @@
     Shell.FlyoutBehavior="Flyout">
 
     <FlyoutItem FlyoutDisplayOptions="AsMultipleItems">
-        <ShellContent Title="Home" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
-
+        <ShellContent Title="Home" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />        
         <ShellContent Title="Embedded Resource Sample" ContentTemplate="{DataTemplate local:EmbeddedResourceSample}" Route="EmbeddedResourceSample"/>
+        <ShellContent Title="Load From File System Sample" ContentTemplate="{DataTemplate local:LoadFromFileSystemSample}" Route="LoadFromFileSystemSample"/>
     </FlyoutItem>
 </Shell>

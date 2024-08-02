@@ -123,25 +123,7 @@ namespace HybridWebView
                 {
                     var hwv = (HybridWebView)_webViewHandler.VirtualView;
                     PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, originalUrl, hwv.MainFile, out string? relativePath, out string contentType, out string fullUrl);
-                    //var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
-
-                    //if (string.IsNullOrEmpty(relativePath))
-                    //{
-                    //    relativePath = hwv.MainFile!.Replace('\\', '/');
-                    //    contentType = "text/html";
-                    //}
-                    //else
-                    //{
-                    //    var requestExtension = Path.GetExtension(relativePath);
-                    //    contentType = requestExtension switch
-                    //    {
-                    //        ".htm" or ".html" => "text/html",
-                    //        ".js" => "application/javascript",
-                    //        ".css" => "text/css",
-                    //        _ => "text/plain",
-                    //    };
-                    //}
-
+                    
                     Stream? contentStream = null;
                     IDictionary<string, string>? customHeaders = null;
 

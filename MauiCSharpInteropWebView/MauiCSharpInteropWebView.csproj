@@ -67,7 +67,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="LoadFromFileSystemSample.xaml.cs">
+	    <DependentUpon>LoadFromFileSystemSample.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Update="EmbeddedResourceSample.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="LoadFromFileSystemSample.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>
