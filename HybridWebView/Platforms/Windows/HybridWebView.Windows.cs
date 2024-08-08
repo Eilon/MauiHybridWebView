@@ -51,7 +51,7 @@ namespace HybridWebView
             
             if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
             {
-                PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, eventArgs.Request.Uri, MainFile, out string? relativePath, out string contentType, out string fullUrl);
+                PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, eventArgs.Request.Uri, MainFile, out string relativePath, out string contentType, out string fullUrl);
                 
                 Stream? contentStream = null;
                 IDictionary<string, string>? customHeaders = null;

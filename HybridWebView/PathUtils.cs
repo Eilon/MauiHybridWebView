@@ -12,7 +12,7 @@ namespace HybridWebView
                 .Replace('\\', Path.DirectorySeparatorChar)
                 .Replace('/', Path.DirectorySeparatorChar);
 
-        public static void GetRelativePathAndContentType(Uri appOriginUri, Uri requestUri, string originalUrl, string? mainFileName, out string? relativePath, out string contentType, out string fullUrl)
+        public static void GetRelativePathAndContentType(Uri appOriginUri, Uri requestUri, string originalUrl, string? mainFileName, out string relativePath, out string contentType, out string fullUrl)
         {
             relativePath = appOriginUri.MakeRelativeUri(requestUri).ToString().Replace('/', '\\');
             fullUrl = originalUrl;

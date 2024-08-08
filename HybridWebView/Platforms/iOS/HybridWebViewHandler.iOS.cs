@@ -123,7 +123,7 @@ namespace HybridWebView
                 if (!string.IsNullOrEmpty(originalUrl) && new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
                 {
                     var hwv = (HybridWebView)_webViewHandler.VirtualView;
-                    PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, originalUrl, hwv.MainFile, out string? relativePath, out string contentType, out string fullUrl);
+                    PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, originalUrl, hwv.MainFile, out string relativePath, out string contentType, out string fullUrl);
 
                     Stream? contentStream = null;
                     IDictionary<string, string>? customHeaders = null;
@@ -155,8 +155,8 @@ namespace HybridWebView
                         return (ms.ToArray(), contentType, StatusCode: 200, CustomHeaders: customHeaders);
                     }
 
-                    var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot!);
-                    var assetPath = Path.Combine(bundleRootDir, relativePath);
+                    string bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot ?? "");
+                    string assetPath = Path.Combine(bundleRootDir, relativePath);
 
                     if (File.Exists(assetPath))
                     {
