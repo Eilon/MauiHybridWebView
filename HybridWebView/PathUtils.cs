@@ -198,6 +198,7 @@ namespace HybridWebView
                 //Other binary file types
                 "zip" => "application/zip",
                 "pbf" or "x-protobuf" => "application/x-protobuf",
+                "mvt" or "vnd.mapbox-vector-tile" => "application/vnd.mapbox-vector-tile",
                 "kmz" or "vnd.google-earth.kmz" or "shp" or "dbf" or "bin" or "b3dm" or "i3dm" or "pnts" or "subtree" or "octet-stream" => "application/octet-stream",
                 "pdf" => "application/pdf",
 
@@ -207,7 +208,7 @@ namespace HybridWebView
 
                 //Text based file types
                 "htm" or "html" => "text/html",
-                "xhtml" => "application/xhtml+xml",
+                "xhtml" or "xhtml+xml" => "application/xhtml+xml",
                 "js" or "javascript" => "text/javascript",
                 "css" => "text/css",
                 "csv" => "text/csv",
