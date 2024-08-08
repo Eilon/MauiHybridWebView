@@ -46,9 +46,9 @@ namespace HybridWebView
         {
             // Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
             using var deferral = eventArgs.GetDeferral();
-
+            
             var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
-
+            
             if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
             {
                 PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, eventArgs.Request.Uri, MainFile, out string? relativePath, out string contentType, out string fullUrl);

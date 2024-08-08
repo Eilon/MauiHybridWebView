@@ -158,7 +158,7 @@ namespace HybridWebView
                 "png" => "image/png",
                 "jpg" or "jpeg" or "jfif" or "pjpeg" or "pjp" => "image/jpeg",
                 "gif" => "image/gif",
-                "webp" => "image/wemp",
+                "webp" => "image/webp",
                 "svg" or "svg+xml" => "image/svg+xml",
                 "ico" or "x-icon" => "image/x-icon",
                 "bmp" => "image/bmp",
