@@ -6,10 +6,10 @@ namespace HybridWebView
 {
     partial class HybridWebView
     {
-        private static readonly string AppHostAddress = "0.0.0.0";
+        private static readonly string AppHostAddress = "0.0.0.1";
 
         /// <summary>
-        /// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
+        /// Gets the application's base URI. Defaults to <c>https://0.0.0.1/</c>
         /// </summary>
         private static readonly string AppOrigin = $"https://{AppHostAddress}/";
 

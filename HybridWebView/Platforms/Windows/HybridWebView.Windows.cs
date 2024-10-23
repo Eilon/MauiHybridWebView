@@ -10,10 +10,10 @@ namespace HybridWebView
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
         // making it substantially faster. Note that this isn't real HTTP traffic, since
         // we intercept all the requests within this origin.
-        private static readonly string AppHostAddress = "0.0.0.0";
+        private static readonly string AppHostAddress = "0.0.0.1";
 
         /// <summary>
-        /// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
+        /// Gets the application's base URI. Defaults to <c>https://0.0.0.1/</c>
         /// </summary>
         private static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
