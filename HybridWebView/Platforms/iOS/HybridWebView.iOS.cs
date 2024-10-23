@@ -5,7 +5,7 @@ namespace HybridWebView
 {
     partial class HybridWebView
     {
-        internal const string AppHostAddress = "0.0.0.0";
+        internal const string AppHostAddress = "0.0.0.1";
 
         internal const string AppOrigin = "app://" + AppHostAddress + "/";
         internal static readonly Uri AppOriginUri = new(AppOrigin);
