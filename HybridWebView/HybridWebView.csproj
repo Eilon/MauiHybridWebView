@@ -33,7 +33,7 @@
 	<PropertyGroup>
 		<!-- Change these two values to control the version -->
 		<VersionMain>1.0.0</VersionMain>
-		<VersionPrelease>-preview6</VersionPrelease>
+		<VersionPrelease>-preview7</VersionPrelease>
 	</PropertyGroup>
 
 	<PropertyGroup>
