@@ -1,5 +1,7 @@
 ﻿using Foundation;
+using Intents;
 using Microsoft.Maui.Platform;
+using System;
 using System.Drawing;
 using System.Globalization;
 using System.Runtime.Versioning;
@@ -78,8 +80,26 @@ namespace HybridWebView
                     {
                         dic.Add((NSString)"Content-Length", (NSString)(responseData.ResponseBytes.Length.ToString(CultureInfo.InvariantCulture)));
                         dic.Add((NSString)"Content-Type", (NSString)responseData.ContentType);
-                        // Disable local caching. This will prevent user scripts from executing correctly.
-                        dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
+
+                        if (responseData.CustomHeaders != null)
+                        {
+                            foreach (var header in responseData.CustomHeaders)
+                            {
+                                // Add custom headers to the response. Skip the Content-Length and Content-Type headers.
+                                if (header.Key != "Content-Length" && header.Key != "Content-Type")
+                                {
+                                    dic.Add((NSString)header.Key, (NSString)header.Value);
+                                }
+                            }
+                        }
+                        
+                        //Ensure that the Cache-Control header is not set in the custom headers.
+                        if(responseData.CustomHeaders == null || responseData.CustomHeaders.ContainsKey("Cache-Control"))
+                        {
+                            // Disable local caching. This will prevent user scripts from executing correctly.
+                            dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
+                        }
+
                         if (urlSchemeTask.Request.Url != null)
                         {
                             using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, responseData.StatusCode, "HTTP/1.1", dic);
@@ -92,55 +112,36 @@ namespace HybridWebView
                 }
             }
 
-            private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytes(string? url)
+            private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode, IDictionary<string, string>? CustomHeaders)> GetResponseBytes(string? url)
             {
-                string contentType;
+                //string contentType;
 
-                string fullUrl = url;
+                string? originalUrl = url;
                 url = QueryStringHelper.RemovePossibleQueryString(url);
 
-                if (new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
+                if (!string.IsNullOrEmpty(originalUrl) && new Uri(url) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
                 {
-                    var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
-
                     var hwv = (HybridWebView)_webViewHandler.VirtualView;
-
-                    var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot!);
-
-                    if (string.IsNullOrEmpty(relativePath))
-                    {
-                        relativePath = hwv.MainFile!.Replace('\\', '/');
-                        contentType = "text/html";
-                    }
-                    else
-                    {
-                        var requestExtension = Path.GetExtension(relativePath);
-                        contentType = requestExtension switch
-                        {
-                            ".htm" or ".html" => "text/html",
-                            ".js" => "application/javascript",
-                            ".css" => "text/css",
-                            _ => "text/plain",
-                        };
-                    }
-
+                    PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, originalUrl, hwv.MainFile, out string relativePath, out string contentType, out string fullUrl);
+                    
                     Stream? contentStream = null;
+                    IDictionary<string, string>? customHeaders = null;
 
                     // Check to see if the request is a proxy request.
                     if (relativePath == HybridWebView.ProxyRequestPath)
                     {
-                        var args = new HybridWebViewProxyEventArgs(fullUrl);
-
+                        var args = new HybridWebViewProxyEventArgs(fullUrl, contentType);
                         await hwv.OnProxyRequestMessage(args);
 
                         if (args.ResponseStream != null)
                         {
-                            contentType = args.ResponseContentType ?? "text/plain";
+                            contentType = args.ResponseContentType ?? PathUtils.PlanTextMimeType;
                             contentStream = args.ResponseStream;
+                            customHeaders = args.CustomResponseHeaders;
                         }
                     }
 
-                    if (contentStream == null)
+                    if (contentStream is null)
                     {
                         contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
                     }
@@ -149,18 +150,19 @@ namespace HybridWebView
                     {
                         using var ms = new MemoryStream();
                         contentStream.CopyTo(ms);
-                        return (ms.ToArray(), contentType, StatusCode: 200);
+                        return (ms.ToArray(), contentType, StatusCode: 200, CustomHeaders: customHeaders);
                     }
 
-                    var assetPath = Path.Combine(bundleRootDir, relativePath);
+                    string bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, hwv.HybridAssetRoot ?? "");
+                    string assetPath = Path.Combine(bundleRootDir, relativePath);
 
                     if (File.Exists(assetPath))
                     {
-                        return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
+                        return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200, CustomHeaders: null);
                     }
                 }
 
-                return (Array.Empty<byte>(), ContentType: string.Empty, StatusCode: 404);
+                return (Array.Empty<byte>(), ContentType: string.Empty, StatusCode: 404, CustomHeaders: null);
             }
 
             [Export("webView:stopURLSchemeTask:")]

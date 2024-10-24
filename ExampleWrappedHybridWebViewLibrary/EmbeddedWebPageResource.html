@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="_hwv/HybridWebView.js"></script>
+    <link href="styles/my-styles.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>HybridWebView demo: Embedded Resource page</h1>
+    <div>
+        This web page is an embedded resource. It can access resources from in the
+        same way as normal via the HybridAssetRoot (not an embedded resrouce) and other embedded resources.
+        Native/JS communication works as expected.
+        This is useful when using the HybridWebView in a .NET Maui library when wrapping a web app that is
+        to be conusmed by other .NET Maui app.
+
+        <p>
+            <button type="button" onclick="invokeDotNetFibonacciMethod()">Invoke .NET Fibonacci method</button>
+            <br /><br />
+            <textarea id="logArea" style="width:100%" rows="10"></textarea>
+        </p>
+
+        <p>
+            The following image is loaded from an embedded resource via the proxy:
+            <br />
+            <br />
+            <img src="proxy?operation=embeddedResource&resourceName=EmbeddedImage.png" />
+        </p>
+    </div>
+
+    <script>
+        async function invokeDotNetFibonacciMethod() {
+            var log = document.getElementById('logArea');
+
+            var fibNumber = Math.round(Math.random() * 30) + 1;
+            log.value += `Calling .NET Fibonacci method with value: ${fibNumber}\n`;     
+
+            var r = await HybridWebView.SendInvokeMessageToDotNetAsync('Fibonacci', [fibNumber]);
+            log.value += `C# Fibonacci result for ${fibNumber}: ${r}\n`;
+        }
+    </script>
+</body>
+</html>

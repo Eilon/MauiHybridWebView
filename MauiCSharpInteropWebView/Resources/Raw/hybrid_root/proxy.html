@@ -25,6 +25,34 @@
             document.getElementById('proxyImage').src = `${window.location.origin}/proxy?operation=loadImageFromWeb&tileId=${randomInt}`;
         }
 
+        //GitHub does not enable CORS on raw files. This will fail normally in a browser.
+        var noCorsEnabledFile = 'https://github.com/Eilon/MauiHybridWebView/blob/main/HybridWebView/HybridWebView.cs';
+
+        function fetchNoCors() {
+            fetchUrl(noCorsEnabledFile);
+        }
+
+        function fetchWithCorsEnabledProxy() {
+            fetchUrl(`${window.location.origin}/proxy?operation=fetchWithCors&url=` + encodeURIComponent(noCorsEnabledFile));
+        }
+
+        function fetchUrl(url) {
+            var outputElm = document.getElementById('fetchResponseTextArea');
+            outputElm.value = 'Fetching...';
+
+            fetch(url).then(response => {
+                if (!response.ok) {
+                    outputElm.value = 'Error: Network response was not ok';
+                }
+
+                return response.text();
+            }).then(data => {
+                outputElm.value = data;
+            }).catch(error => {
+                outputElm.value = 'There was a problem with the fetch operation: ' + error;
+            });
+        }
+
         //Load the map.
         window.onload = function () {
             var map = new maplibregl.Map({
@@ -76,12 +104,19 @@
         <input type="button" value="Fail to load image from Zip" onclick="loadFromZip('notInZip.jpeg')" />
         <input type="button" value="Proxy random image from web" onclick="loadFromWeb()" />
         <br /><br />
-        <img id="proxyImage" />
         <p>
             The image below uses an <code>img</code> tag with a proxy URL in it's HTML like <code>&lt;img src="/proxy?operation=loadImageFromZip&fileName=happy.jpeg" /&gt;</code>
-            <br/>
+            <br />
             <img src="/proxy?operation=loadImageFromZip&fileName=happy.jpeg" />
         </p>
+        <p>
+            Leverage the proxy to access resources that are on non-CORS enabled domains.
+        </p>
+        <input type="button" value="Fetch from non-CORS enabled domain" onclick="fetchNoCors()" />
+        <input type="button" value="Fetch from non-CORS enabled domain with proxy" onclick="fetchWithCorsEnabledProxy()" /> 
+        <br />
+        <br />
+        <textarea id="fetchResponseTextArea" style="width:100%" rows="10"></textarea>
     </div>
     <div>
         <b>

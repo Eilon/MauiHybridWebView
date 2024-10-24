@@ -27,11 +27,10 @@
             var result = new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(url))
             {
-                var query = new Uri(url).Query;
-                if (query != null && query.Length > 1)
+                string query = url.Substring(url.IndexOf("?") + 1);
+                if (!string.IsNullOrWhiteSpace(query))
                 {
                     result = query
-                        .Substring(1)
                         .Split('&')
                         .Select(p => p.Split('='))
                         .ToDictionary(p => p[0], p => Uri.UnescapeDataString(p[1]));
