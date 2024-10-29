@@ -62,6 +62,12 @@ namespace HybridWebView
 
             await InitializeHybridWebView();
 
+            // HybridWebViewInitialized assumes Handler != null
+            if (Handler == null)
+            {
+                return;
+            }
+
             HybridWebViewInitialized?.Invoke(this, new HybridWebViewInitializedEventArgs()
             {
 #if ANDROID || IOS || MACCATALYST || WINDOWS
