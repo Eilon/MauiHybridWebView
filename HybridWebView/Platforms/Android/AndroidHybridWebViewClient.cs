@@ -14,53 +14,38 @@ namespace HybridWebView
         {
             _handler = handler;
         }
+
         public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
         {
-            var fullUrl = request?.Url?.ToString();
-            var requestUri = QueryStringHelper.RemovePossibleQueryString(fullUrl);
+            var originalUrl = request?.Url?.ToString();
+            var requestUri = QueryStringHelper.RemovePossibleQueryString(originalUrl);
 
             var webView = (HybridWebView)_handler.VirtualView;
 
-            if (new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
+            if (!string.IsNullOrEmpty(originalUrl) && new Uri(requestUri) is Uri uri && HybridWebView.AppOriginUri.IsBaseOf(uri))
             {
-                var relativePath = HybridWebView.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
-
-                string contentType;
-                if (string.IsNullOrEmpty(relativePath))
-                {
-                    relativePath = webView.MainFile;
-                    contentType = "text/html";
-                }
-                else
-                {
-                    var requestExtension = Path.GetExtension(relativePath);
-                    contentType = requestExtension switch
-                    {
-                        ".htm" or ".html" => "text/html",
-                        ".js" => "application/javascript",
-                        ".css" => "text/css",
-                        _ => "text/plain",
-                    };
-                }
-
+                PathUtils.GetRelativePathAndContentType(HybridWebView.AppOriginUri, uri, originalUrl, webView.MainFile, out string relativePath, out string contentType, out string fullUrl);
+                
                 Stream? contentStream = null;
+                IDictionary<string, string>? customHeaders = null;
 
                 // Check to see if the request is a proxy request.
-                if (relativePath == HybridWebView.ProxyRequestPath)
+                if (!string.IsNullOrEmpty(relativePath) && relativePath.Equals(HybridWebView.ProxyRequestPath))
                 {
-                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+                    var args = new HybridWebViewProxyEventArgs(fullUrl, contentType);
 
                     // TODO: Don't block async. Consider making this an async call, and then calling DidFinish when done
                     webView.OnProxyRequestMessage(args).Wait();
 
                     if (args.ResponseStream != null)
                     {
-                        contentType = args.ResponseContentType ?? "text/plain";
+                        contentType = args.ResponseContentType ?? PathUtils.PlanTextMimeType;
                         contentStream = args.ResponseStream;
+                        customHeaders = args.CustomResponseHeaders;
                     }
                 }
 
-                if (contentStream == null)
+                if (contentStream is null)
                 {
                     contentStream = KnownStaticFileProvider.GetKnownResourceStream(relativePath!);
                 }
@@ -78,12 +63,12 @@ namespace HybridWebView
                     var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
                     var notFoundContentStream = new MemoryStream(notFoundByteArray);
 
-                    return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
+                    return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain", null), notFoundContentStream);
                 }
                 else
                 {
                     // TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
-                    return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType), contentStream);
+                    return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType, customHeaders), contentStream);
                 }
             }
             else
@@ -106,9 +91,29 @@ namespace HybridWebView
             }
         }
 
-        private protected static IDictionary<string, string> GetHeaders(string contentType) =>
-            new Dictionary<string, string> {
-                { "Content-Type", contentType },
-            };
+        private protected static IDictionary<string, string> GetHeaders(string contentType, IDictionary<string, string>? customHeaders)
+        {
+            var headers = new Dictionary<string, string>();
+
+            if (customHeaders != null)
+            {
+                foreach (var header in customHeaders)
+                {
+                    // Add custom headers to the response. Skip the Content-Length and Content-Type headers.
+                    if (header.Key != "Content-Length" && header.Key != "Content-Type")
+                    {
+                        headers[header.Key] = header.Value;
+                    }
+                }
+            }
+
+            //If a custom header hasn't specified a content type, use the one we've determined.
+            if (!headers.ContainsKey("Content-Type"))
+            {
+                headers.Add("Content-Type", contentType);
+            }
+
+            return headers;
+        }
     }
 }
