@@ -48,6 +48,8 @@ namespace HybridWebView
             using var deferral = eventArgs.GetDeferral();
 
             var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+            var method = eventArgs.Request.Method;
+            var headers = eventArgs.Request.Headers.ToDictionary(p => p.Key, p => p.Value);
 
             if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
             {
@@ -72,19 +74,21 @@ namespace HybridWebView
                 }
 
                 Stream? contentStream = null;
+                IDictionary<string, string>? responseHeaders = null;
 
                 // Check to see if the request is a proxy request
                 if (relativePath == ProxyRequestPath)
                 {
                     var fullUrl = eventArgs.Request.Uri;
 
-                    var args = new HybridWebViewProxyEventArgs(fullUrl);
+                    var args = new HybridWebViewProxyEventArgs(fullUrl, method, headers);
                     await OnProxyRequestMessage(args);
 
                     if (args.ResponseStream != null)
                     {
                         contentType = args.ResponseContentType ?? "text/plain";
                         contentStream = args.ResponseStream;
+                        responseHeaders = args.ResponseHeaders;
                     }
                 }
 
@@ -106,17 +110,21 @@ namespace HybridWebView
                         Content: null,
                         StatusCode: 404,
                         ReasonPhrase: "Not Found",
-                        Headers: GetHeaderString("text/plain", notFoundContent.Length)
+                        Headers: GetHeaderString("text/plain", notFoundContent.Length, responseHeaders)
                     );
                 }
                 else
                 {
+                    var randomStream = await CopyContentToRandomAccessStreamAsync(contentStream);
+
                     eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
-                        Content: await CopyContentToRandomAccessStreamAsync(contentStream),
+                        Content: randomStream,
                         StatusCode: 200,
                         ReasonPhrase: "OK",
-                        Headers: GetHeaderString(contentType, (int)contentStream.Length)
+                        Headers: GetHeaderString(contentType, (int)randomStream.Size, responseHeaders)
                     );
+
+                    randomStream = null;
                 }
 
                 contentStream?.Dispose();
@@ -135,9 +143,25 @@ namespace HybridWebView
             }
         }
 
-        private protected static string GetHeaderString(string contentType, int contentLength) =>
-$@"Content-Type: {contentType}
-Content-Length: {contentLength}";
+        private protected static string GetHeaderString(string contentType, int contentLength, IDictionary<string, string>? baseHeaders)
+        {
+            if (baseHeaders == null) baseHeaders = new Dictionary<string, string>();
+
+            if (baseHeaders.ContainsKey("Content-Type") == false)
+            {
+                baseHeaders["Content-Type"] = contentType;
+            }
+
+            if (baseHeaders.ContainsKey("Content-Length") == false)
+            {
+                baseHeaders["Content-Length"] = contentLength.ToString();
+            }
+
+            var valuesFormated = baseHeaders.Select(h => $"{h.Key}: {h.Value}");
+            var result = $@"{string.Join("\n", valuesFormated)}";
+
+            return result;
+        }
 
         private void Wv2_WebMessageReceived(Microsoft.UI.Xaml.Controls.WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
         {
